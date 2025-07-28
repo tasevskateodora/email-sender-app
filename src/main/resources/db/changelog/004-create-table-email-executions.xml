@@ -1,0 +1,59 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd
+http://www.liquibase.org/xml/ns/pro
+http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd">
+    <!-- Create Table -->
+    <changeSet author="postgres" id="10">
+        <comment>Create email_executions table</comment>
+        <sql>
+            CREATE TABLE email_executions (
+                                              id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                                              executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                              status VARCHAR(50) NOT NULL,
+                                              error_message TEXT NULL,
+                                              retry_attempt INTEGER DEFAULT 0 NOT NULL,
+                                              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                              email_job_id UUID NOT NULL
+            );
+
+            ALTER TABLE email_executions
+                ADD CONSTRAINT fk_email_executions_email_job
+                    FOREIGN KEY (email_job_id) REFERENCES email_jobs(id) ON DELETE CASCADE;
+
+
+
+
+            ALTER TABLE email_executions
+                ADD CONSTRAINT chk_email_executions_retry_attempt_positive
+                    CHECK (retry_attempt >= 0);
+
+
+            ALTER TABLE email_executions
+                ADD CONSTRAINT chk_email_executions_valid_status
+                    CHECK (status IN ('SUCCESS', 'FAIL'));
+
+            ALTER TABLE email_executions
+                ADD CONSTRAINT chk_email_executions_error_message_when_failed
+                    CHECK (
+                        (status = 'SUCCESS' AND error_message IS NULL) OR
+                        (status IN ('FAIL'))
+                        );
+
+            CREATE INDEX idx_email_executions_email_job_id ON email_executions(email_job_id);
+            CREATE INDEX idx_email_executions_status ON email_executions(status);
+            CREATE INDEX idx_email_executions_executed_at_desc ON email_executions(executed_at DESC);
+            CREATE INDEX idx_email_executions_retry_attempt ON email_executions(retry_attempt);
+        </sql>
+        <rollback>
+            <sql>
+                DROP TABLE EMAIL_EXECUTIONS;
+            </sql>
+        </rollback>
+    </changeSet>
+
+
+</databaseChangeLog>

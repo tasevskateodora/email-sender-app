@@ -1,0 +1,84 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd
+http://www.liquibase.org/xml/ns/pro
+http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd">
+    <!-- Create Table -->
+    <changeSet author="postgres" id="1">
+        <tagDatabase tag="1.0.0"/>
+    </changeSet>
+    <changeSet author="postgres" id="2">
+        <comment>Create role table</comment>
+        <sql>
+
+            CREATE TABLE role
+            (
+                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                name varchar(50) UNIQUE NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE UNIQUE INDEX idx_role_name ON role(name);
+        </sql>
+        <rollback>
+            <sql>
+                DROP TABLE ROLE;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="postgres" id="3">
+        <comment>Create users table</comment>
+        <sql>
+            CREATE TABLE users (
+                                   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                                   username VARCHAR(50) UNIQUE NOT NULL,
+                                   password VARCHAR(255) NOT NULL,
+                                   enabled BOOLEAN DEFAULT true NOT NULL,
+                                   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE UNIQUE INDEX idx_users_username ON users(username);
+            CREATE INDEX idx_users_enabled ON users(enabled);
+
+
+        </sql>
+        <rollback>
+            <sql>
+                DROP TABLE USERS;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="postgres" id="4">
+        <comment>Create user_roles table</comment>
+        <sql>
+            CREATE TABLE user_roles (
+                                        user_id UUID NOT NULL,
+                                        role_id UUID NOT NULL,
+                                        PRIMARY KEY (user_id, role_id)
+            );
+
+            ALTER TABLE user_roles
+                ADD CONSTRAINT fk_user_roles_user_id
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+            ALTER TABLE user_roles
+                ADD CONSTRAINT fk_user_roles_role_id
+                    FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE;
+
+
+        </sql>
+        <rollback>
+            <sql>
+                DROP TABLE USER_ROLES;
+            </sql>
+        </rollback>
+    </changeSet>
+    <changeSet author="postgres" id="5">
+        <tagDatabase tag="2.0.0"/>
+    </changeSet>
+</databaseChangeLog>

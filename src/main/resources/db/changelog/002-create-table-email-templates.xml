@@ -1,0 +1,33 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd
+http://www.liquibase.org/xml/ns/pro
+http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd">
+    <!-- Create Table -->
+    <changeSet author="postgres" id="6">
+        <comment>Create email_templates table</comment>
+        <sql>
+            CREATE TABLE email_templates (
+                                             id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                                             name VARCHAR(100) UNIQUE NOT NULL,
+                                             subject VARCHAR(200) NOT NULL,
+                                             body TEXT NOT NULL,
+                                             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE UNIQUE INDEX idx_email_templates_name ON email_templates(name);
+        </sql>
+        <rollback>
+            <sql>
+                DROP TABLE EMAIL_TEMPLATES;
+            </sql>
+        </rollback>
+    </changeSet>
+    <changeSet author="postgres" id="7">
+        <tagDatabase tag="3.0.0"/>
+    </changeSet>
+</databaseChangeLog>

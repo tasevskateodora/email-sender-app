@@ -1,0 +1,5 @@
+changeLogFile: db/db.changelog-master.xml
+url: jdbc:postgresql://localhost:2345/database
+username: user
+password: password
+driver: org.postgresql.Driver

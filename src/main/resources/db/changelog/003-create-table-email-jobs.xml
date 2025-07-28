@@ -1,0 +1,79 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd
+http://www.liquibase.org/xml/ns/pro
+http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd">
+    <!-- Create Table -->
+
+    <changeSet author="postgres" id="8">
+        <comment>Create email_jobs table</comment>
+        <sql>
+            CREATE TABLE email_jobs (
+                                        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                                        start_date TIMESTAMP NOT NULL,
+                                        end_date TIMESTAMP NULL,
+                                        recurrence_pattern VARCHAR(50) NOT NULL,
+                                        sender_email VARCHAR(100) NOT NULL,
+                                        receiver_emails TEXT NOT NULL,
+                                        enabled BOOLEAN DEFAULT true NOT NULL,
+                                        is_one_time BOOLEAN DEFAULT false NOT NULL,
+                                        next_run_time TIMESTAMP NULL,
+                                        send_time TIME NULL,
+                                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                        created_by_user_id UUID NOT NULL,
+                                        email_template_id UUID NULL
+            );
+
+            ALTER TABLE email_jobs
+                ADD CONSTRAINT fk_email_jobs_created_by_user
+                    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+            ALTER TABLE email_jobs
+                ADD CONSTRAINT fk_email_jobs_email_template
+                    FOREIGN KEY (email_template_id) REFERENCES email_templates(id) ON DELETE SET NULL;
+
+            ALTER TABLE email_jobs
+                ADD CONSTRAINT chk_email_jobs_end_date_after_start
+                    CHECK (end_date IS NULL OR end_date > start_date);
+
+            ALTER TABLE email_jobs
+                ADD CONSTRAINT chk_email_jobs_sender_email_not_empty
+                    CHECK (LENGTH(TRIM(sender_email)) > 0);
+
+            ALTER TABLE email_jobs
+                ADD CONSTRAINT chk_email_jobs_receiver_emails_not_empty
+                    CHECK (LENGTH(TRIM(receiver_emails)) > 0);
+
+
+            ALTER TABLE email_jobs
+                ADD CONSTRAINT chk_email_jobs_valid_recurrence_pattern
+                    CHECK (recurrence_pattern IN ('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'ONE_TIME'));
+
+
+
+            CREATE INDEX idx_email_jobs_enabled ON email_jobs(enabled);
+            CREATE INDEX idx_email_jobs_next_run_time ON email_jobs(next_run_time);
+            CREATE INDEX idx_email_jobs_created_by_user_id ON email_jobs(created_by_user_id);
+            CREATE INDEX idx_email_jobs_recurrence_pattern ON email_jobs(recurrence_pattern);
+            CREATE INDEX idx_email_jobs_email_template_id ON email_jobs(email_template_id);
+
+
+            CREATE INDEX idx_email_jobs_scheduler_query
+                ON email_jobs(enabled, next_run_time)
+                WHERE enabled = true AND next_run_time IS NOT NULL;
+        </sql>
+        <rollback>
+            <sql>
+                DROP TABLE EMAIL_JOBS;
+            </sql>
+        </rollback>
+    </changeSet>
+    <changeSet author="postgres" id="9">
+        <tagDatabase tag="4.0.0"/>
+    </changeSet>
+
+</databaseChangeLog>
