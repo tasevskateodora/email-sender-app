@@ -7,10 +7,13 @@ import com.example.iwemailsender.email.dto.CreateEmailJobRequestDto;
 import com.example.iwemailsender.email.dto.EmailJobResponseDto;
 import com.example.iwemailsender.email.mapper.EmailJobMapper;
 import com.example.iwemailsender.email.repository.EmailJobRepository;
+import com.example.iwemailsender.email.repository.EmailTemplateRepository;
 import com.example.iwemailsender.email.repository.UserRepository;
 import com.example.iwemailsender.email.service.EmailJobService;
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,11 +29,12 @@ public class EmailJobServiceImpl implements EmailJobService {
     private final EmailJobRepository emailJobRepository;
     private final UserRepository userRepository;
     private final EmailJobMapper emailJobMapper;
-
-    public EmailJobServiceImpl(EmailJobRepository emailJobrepository, UserRepository userRepository, EmailJobMapper emailJobMapper, EmailJobRepository emailJobRepository) {
+    private final EmailTemplateRepository emailTemplateRepository;
+    public EmailJobServiceImpl(EmailJobRepository emailJobrepository, UserRepository userRepository, EmailJobMapper emailJobMapper, EmailJobRepository emailJobRepository, EmailTemplateRepository emailTemplateRepository) {
         this.emailJobRepository = emailJobrepository;
         this.userRepository = userRepository;
         this.emailJobMapper = emailJobMapper;
+        this.emailTemplateRepository = emailTemplateRepository;
     }
   /*  public Optional<EmailJobResponseDto> save(CreateEmailJobRequestDto request) {
         try {
@@ -61,6 +65,13 @@ public class EmailJobServiceImpl implements EmailJobService {
             emailJob.setNextRunTime(request.getStartDate());
             emailJob.setEnabled(true);
             emailJob.setOneTime(false);
+
+           //EmailJob emailJob = emailJobMapper.toEntity(request);
+
+            if (request.getEmailTemplate() != null && request.getEmailTemplate().getId() != null) {
+                emailTemplateRepository.findById(request.getEmailTemplate().getId())
+                        .ifPresent(emailJob::setEmailTemplate);
+            }
 
             EmailJob saved = emailJobRepository.save(emailJob);
             return Optional.of(emailJobMapper.toResponseDTO(saved));
@@ -106,6 +117,7 @@ public class EmailJobServiceImpl implements EmailJobService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EmailJobResponseDto> findJobsToExecute() {
         return emailJobMapper.toResponseDTOList(emailJobRepository.findJobsToExecute(LocalDateTime.now()));
     }
@@ -133,6 +145,32 @@ public class EmailJobServiceImpl implements EmailJobService {
         dto.setSendTime(sendTime);
 
         return save(userId,dto);
+    }
+
+    @Override
+    public void toggleJobStatus(UUID jobId) {
+        Optional<EmailJob> jobOpt = emailJobRepository.findById(jobId);
+
+        if (jobOpt.isPresent()) {
+            EmailJob job = jobOpt.get();
+            job.setEnabled(!job.isEnabled());
+            emailJobRepository.save(job);
+        } else {
+            throw new EntityNotFoundException("EmailJob not found with id: " + jobId);
+        }
+    }
+
+    @Override
+    public void setJobStatus(UUID jobId, boolean enabled) {
+        Optional<EmailJob> jobOpt = emailJobRepository.findById(jobId);
+
+        if (jobOpt.isPresent()) {
+            EmailJob job = jobOpt.get();
+            job.setEnabled(enabled);
+            emailJobRepository.save(job);
+        } else {
+            throw new EntityNotFoundException("EmailJob not found with id: " + jobId);
+        }
     }
 }
 

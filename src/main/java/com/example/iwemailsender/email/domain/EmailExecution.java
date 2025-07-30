@@ -1,6 +1,8 @@
 package com.example.iwemailsender.email.domain;
 
 import com.example.iwemailsender.infrastructure.enums.EmailStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,6 +24,7 @@ public class EmailExecution extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "email_job_id", nullable = false)
+    //@JsonIgnore
     private EmailJob emailJob;
 
     public EmailExecution() {

@@ -1,5 +1,6 @@
 package com.example.iwemailsender.email.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,6 +24,7 @@ public class EmailTemplate extends BaseEntity{
 
 
     @OneToMany(mappedBy = "emailTemplate", fetch = FetchType.LAZY)
+    //@JsonIgnore
     private List<EmailJob> emailJobs = new ArrayList<>();
 
     public EmailTemplate(String name, String subject, String body ){

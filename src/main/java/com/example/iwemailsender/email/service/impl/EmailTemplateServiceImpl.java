@@ -6,7 +6,6 @@ import com.example.iwemailsender.email.dto.EmailTemplateResponseDto;
 import com.example.iwemailsender.email.mapper.EmailTemplateMapper;
 import com.example.iwemailsender.email.repository.EmailTemplateRepository;
 import com.example.iwemailsender.email.service.EmailTemplateService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class EmailTemplateServiceImpl implements EmailTemplateService {
 
     private final EmailTemplateRepository emailTemplateRepository;

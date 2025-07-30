@@ -6,7 +6,6 @@ import com.example.iwemailsender.email.repository.EmailExecutionRepository;
 import com.example.iwemailsender.email.repository.EmailJobRepository;
 import com.example.iwemailsender.email.service.EmailExecutionService;
 import com.example.iwemailsender.infrastructure.enums.EmailStatus;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

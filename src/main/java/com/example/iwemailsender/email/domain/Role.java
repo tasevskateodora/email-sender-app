@@ -1,5 +1,6 @@
 package com.example.iwemailsender.email.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +21,7 @@ public class Role extends BaseEntity{
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     @OrderBy("username ASC")
+    //@JsonIgnore
     private List<User> users = new ArrayList<>();
 
     public Role() {

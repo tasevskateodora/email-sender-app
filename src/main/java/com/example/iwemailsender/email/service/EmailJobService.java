@@ -25,6 +25,8 @@ public interface EmailJobService {
     List<EmailJobResponseDto> findByUserId(UUID userId);
     Optional<EmailJobResponseDto> createJob(UUID userId, String senderEmail, String receiverEmails,
                                             RecurrencePattern pattern, LocalDateTime startDate, LocalTime sendTime);
+    void toggleJobStatus(UUID jobId);
+    void setJobStatus(UUID jobId, boolean enabled);
 }
 
 

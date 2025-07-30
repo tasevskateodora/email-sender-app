@@ -1,6 +1,9 @@
 package com.example.iwemailsender.email.dto;
 
+import com.example.iwemailsender.email.domain.EmailTemplate;
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Email;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,7 +17,9 @@ public class EmailJobResponseDto {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private RecurrencePattern recurrencePattern;
+    @Email
     private String senderEmail;
+    @Email
     private String receiverEmails;
     private boolean enabled;
     private boolean isOneTime;
@@ -26,6 +31,8 @@ public class EmailJobResponseDto {
     private UUID createdByUserId;
     private String emailTemplateName;
     private UUID emailTemplateId;
+    @JsonIgnore
+    private EmailTemplate emailTemplate;
 
     public String getEmailTemplateName() {
         return emailTemplateName;
@@ -153,5 +160,13 @@ public class EmailJobResponseDto {
 
     public void setCreatedByUserId(UUID createdByUserId) {
         this.createdByUserId = createdByUserId;
+    }
+
+    public EmailTemplate getEmailTemplate() {
+        return emailTemplate;
+    }
+
+    public void setEmailTemplate(EmailTemplate emailTemplate) {
+        this.emailTemplate = emailTemplate;
     }
 }

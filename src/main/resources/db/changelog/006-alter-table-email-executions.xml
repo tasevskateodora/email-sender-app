@@ -1,0 +1,32 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd
+http://www.liquibase.org/xml/ns/pro
+http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd">
+    <!-- Create Table -->
+
+    <changeSet author="postgres" id="14">
+        <comment>Alter email_jobs table</comment>
+        <sql>
+            ALTER TABLE email_executions
+            DROP CONSTRAINT IF EXISTS chk_email_executions_error_message_when_failed;
+        </sql>
+      <rollback>
+             <sql>
+                 ALTER TABLE email_executions
+                 ADD CONSTRAINT chk_email_executions_error_message_when_failed
+                 CHECK (
+                 (status = 'SUCCESS' AND error_message IS NULL) OR
+                 (status IN ('FAIL'))
+                 );
+             </sql>
+         </rollback>
+     </changeSet>
+    <changeSet author="postgres" id="15">
+         <tagDatabase tag="8.0.0"/>
+     </changeSet>
+
+    </databaseChangeLog>

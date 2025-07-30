@@ -1,6 +1,7 @@
 package com.example.iwemailsender.email.dto;
 
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
+import jakarta.validation.constraints.Email;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,11 +15,16 @@ public class CreateEmailJobRequestDto {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private RecurrencePattern recurrencePattern;
+    @Email
     private String senderEmail;
+    @Email
     private String receiveEmails;
     private boolean enabled=true;
     private boolean isOneTime=false;
     private LocalTime sendTime;
+
+    private EmailTemplateDto emailTemplate;
+
 
     public LocalDateTime getStartDate() {
         return startDate;
@@ -83,4 +89,11 @@ public class CreateEmailJobRequestDto {
     public void setSendTime(LocalTime sendTime) {
         this.sendTime = sendTime;
     }
+    public EmailTemplateDto getEmailTemplate() {
+        return emailTemplate;
+    }
+    public void setEmailTemplate(EmailTemplateDto emailTemplate) {
+        this.emailTemplate = emailTemplate;
+    }
+
 }

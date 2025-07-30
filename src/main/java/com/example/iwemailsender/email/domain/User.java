@@ -1,5 +1,6 @@
 package com.example.iwemailsender.email.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,6 +27,7 @@ public class User extends BaseEntity{
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @OrderBy("name ASC")
+    //@JsonIgnore
     private List<Role> roles = new ArrayList<>();
 
     public User() {

@@ -1,6 +1,8 @@
 package com.example.iwemailsender.email.domain;
 
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -34,14 +36,17 @@ public class EmailJob extends BaseEntity{
 
 
     @OneToMany(mappedBy = "emailJob", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   // @JsonIgnore
     private List<EmailExecution> executions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "email_template_id")
+   // @JsonIgnore
     private EmailTemplate emailTemplate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = true)
+   // @JsonIgnore
     private User createdBy;
 
     public EmailJob(LocalDateTime startDate, LocalDateTime endDate, RecurrencePattern recurrencePattern, String senderEmail, String receiverEmails, boolean enabled, boolean isOneTime, LocalDateTime nextRunTime, LocalTime sendTime) {

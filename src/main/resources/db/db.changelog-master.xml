@@ -8,4 +8,7 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
     <include file="/db/changelog/002-create-table-email-templates.xml"/>
     <include file="/db/changelog/003-create-table-email-jobs.xml"/>
     <include file="/db/changelog/004-create-table-email-executions.xml"/>
+    <include file="/db/changelog/005-alter-table-email-executions.xml"/>
+    <include file="/db/changelog/006-alter-table-email-executions.xml"/>
+    <include file="/db/changelog/007-alter-table-email-executions.xml"/>
 </databaseChangeLog>
