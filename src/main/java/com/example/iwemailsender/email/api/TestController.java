@@ -275,7 +275,7 @@ public class TestController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "🗑️ Job deleted successfully");
+            response.put("message", "Job deleted successfully");
             response.put("jobId", jobId);
 
             return ResponseEntity.ok(response);
