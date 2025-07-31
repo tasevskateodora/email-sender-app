@@ -1,13 +1,11 @@
 package com.example.iwemailsender.email.dto;
 
 import com.example.iwemailsender.infrastructure.enums.EmailStatus;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-public class EmailExecutionResponseDto{
+public class EmailExecutionDto {
 
     private UUID id;
     private LocalDateTime executedAt;

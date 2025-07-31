@@ -1,8 +1,7 @@
 package com.example.iwemailsender.email.service.impl;
 
 import com.example.iwemailsender.email.domain.EmailTemplate;
-import com.example.iwemailsender.email.dto.CreateEmailTemplateRequestDto;
-import com.example.iwemailsender.email.dto.EmailTemplateResponseDto;
+import com.example.iwemailsender.email.dto.EmailTemplateDto;
 import com.example.iwemailsender.email.mapper.EmailTemplateMapper;
 import com.example.iwemailsender.email.repository.EmailTemplateRepository;
 import com.example.iwemailsender.email.service.EmailTemplateService;
@@ -26,50 +25,49 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     }
 
     @Override
-    public Optional<EmailTemplateResponseDto> save(CreateEmailTemplateRequestDto requestDto) {
+    public Optional<EmailTemplateDto> save(EmailTemplateDto dto) {
         try {
-            EmailTemplate template = emailTemplateMapper.toEntity(requestDto);
+            EmailTemplate template = emailTemplateMapper.toEntity(dto);
             if (template.getId() == null && emailTemplateRepository.findByName(template.getName()).isPresent()) {
                 return Optional.empty();
             }
             EmailTemplate saved = emailTemplateRepository.save(template);
-            return Optional.of(emailTemplateMapper.toResponseDTO(saved));
+            return Optional.of(emailTemplateMapper.toDto(saved));
         } catch (Exception e) {
             return Optional.empty();
         }
     }
 
     @Override
-    public List<EmailTemplateResponseDto> findAll() {
+    public List<EmailTemplateDto> findAll() {
         return emailTemplateRepository.findAll().stream()
-                .map(emailTemplateMapper::toResponseDTO)
+                .map(emailTemplateMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<EmailTemplateResponseDto> findById(UUID id) {
+    public Optional<EmailTemplateDto> findById(UUID id) {
         return emailTemplateRepository.findById(id)
-                .map(emailTemplateMapper::toResponseDTO);
+                .map(emailTemplateMapper::toDto);
     }
 
     @Override
-    public Optional<EmailTemplateResponseDto> update(UUID id, CreateEmailTemplateRequestDto requestDto) {
+    public Optional<EmailTemplateDto> update(UUID id, EmailTemplateDto dto) {
         Optional<EmailTemplate> existingOpt = emailTemplateRepository.findById(id);
         if (existingOpt.isEmpty()) {
             return Optional.empty();
         }
         try {
             EmailTemplate existing = existingOpt.get();
-            EmailTemplate updatedTemplate = emailTemplateMapper.toEntity(requestDto);
+            EmailTemplate updatedTemplate = emailTemplateMapper.toEntity(dto);
             updatedTemplate.setId(id);
             updatedTemplate.setCreatedAt(existing.getCreatedAt());
             EmailTemplate saved = emailTemplateRepository.save(updatedTemplate);
-            return Optional.of(emailTemplateMapper.toResponseDTO(saved));
+            return Optional.of(emailTemplateMapper.toDto(saved));
         } catch (Exception e) {
             return Optional.empty();
         }
     }
-
 
     @Override
     public void deleteById(UUID id) {
@@ -77,17 +75,17 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     }
 
     @Override
-    public Optional<EmailTemplateResponseDto> findByName(String name) {
+    public Optional<EmailTemplateDto> findByName(String name) {
         return emailTemplateRepository.findByName(name)
-                .map(emailTemplateMapper::toResponseDTO);
+                .map(emailTemplateMapper::toDto);
     }
 
     @Override
-    public Optional<EmailTemplateResponseDto> createTemplate(String name, String subject, String body) {
-        EmailTemplate template = new EmailTemplate();
-        template.setName(name);
-        template.setSubject(subject);
-        template.setBody(body);
-        return save(emailTemplateMapper.toCreateDTO(template));
+    public Optional<EmailTemplateDto> createTemplate(String name, String subject, String body) {
+        EmailTemplateDto dto = new EmailTemplateDto();
+        dto.setName(name);
+        dto.setSubject(subject);
+        dto.setBody(body);
+        return save(dto);
     }
 }

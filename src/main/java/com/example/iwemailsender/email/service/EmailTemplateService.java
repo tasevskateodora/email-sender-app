@@ -1,7 +1,6 @@
 package com.example.iwemailsender.email.service;
 
-import com.example.iwemailsender.email.dto.CreateEmailTemplateRequestDto;
-import com.example.iwemailsender.email.dto.EmailTemplateResponseDto;
+import com.example.iwemailsender.email.dto.EmailTemplateDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,14 +8,14 @@ import java.util.UUID;
 
 public interface EmailTemplateService {
 
-    Optional<EmailTemplateResponseDto> save(CreateEmailTemplateRequestDto requestDto);
-    List<EmailTemplateResponseDto> findAll();
-    Optional<EmailTemplateResponseDto> findById(UUID id);
-    Optional<EmailTemplateResponseDto> update(UUID id, CreateEmailTemplateRequestDto requestDto);
+    Optional<EmailTemplateDto> save(EmailTemplateDto dto);
+    List<EmailTemplateDto> findAll();
+    Optional<EmailTemplateDto> findById(UUID id);
+    Optional<EmailTemplateDto> update(UUID id, EmailTemplateDto dto);
     void deleteById(UUID id);
 
-    Optional<EmailTemplateResponseDto> findByName(String name);
+    Optional<EmailTemplateDto> findByName(String name);
 
-    Optional<EmailTemplateResponseDto> createTemplate(String name, String subject, String body);
+    Optional<EmailTemplateDto> createTemplate(String name, String subject, String body);
 }
 

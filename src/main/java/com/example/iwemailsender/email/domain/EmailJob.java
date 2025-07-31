@@ -18,7 +18,6 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "email_jobs")
-@Data
 public class EmailJob extends BaseEntity{
 
 

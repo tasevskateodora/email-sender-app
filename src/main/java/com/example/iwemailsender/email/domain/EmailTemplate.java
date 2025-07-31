@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
-@Data
 @Entity
 @Table(name = "email_templates")
 public class EmailTemplate extends BaseEntity{

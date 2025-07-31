@@ -4,51 +4,46 @@ import com.example.iwemailsender.email.domain.EmailTemplate;
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
-@Data
-public class EmailJobResponseDto {
+public class EmailJobDto {
 
     private UUID id;
+
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private RecurrencePattern recurrencePattern;
+
     @Email
     private String senderEmail;
+
     @Email
     private String receiverEmails;
-    private boolean enabled;
-    private boolean isOneTime;
-    private LocalDateTime nextRunTime;
+
+    private boolean enabled = true;
+    private boolean isOneTime = false;
+
     private LocalTime sendTime;
+
+    private LocalDateTime nextRunTime;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
     private String createdByUsername;
     private UUID createdByUserId;
+
     private String emailTemplateName;
     private UUID emailTemplateId;
+
     @JsonIgnore
     private EmailTemplate emailTemplate;
 
-    public String getEmailTemplateName() {
-        return emailTemplateName;
-    }
+    private EmailTemplateDto emailTemplateDto;
 
-    public void setEmailTemplateName(String emailTemplateName) {
-        this.emailTemplateName = emailTemplateName;
-    }
-
-    public UUID getEmailTemplateId() {
-        return emailTemplateId;
-    }
-
-    public void setEmailTemplateId(UUID emailTemplateId) {
-        this.emailTemplateId = emailTemplateId;
-    }
 
     public UUID getId() {
         return id;
@@ -114,20 +109,20 @@ public class EmailJobResponseDto {
         isOneTime = oneTime;
     }
 
-    public LocalDateTime getNextRunTime() {
-        return nextRunTime;
-    }
-
-    public void setNextRunTime(LocalDateTime nextRunTime) {
-        this.nextRunTime = nextRunTime;
-    }
-
     public LocalTime getSendTime() {
         return sendTime;
     }
 
     public void setSendTime(LocalTime sendTime) {
         this.sendTime = sendTime;
+    }
+
+    public LocalDateTime getNextRunTime() {
+        return nextRunTime;
+    }
+
+    public void setNextRunTime(LocalDateTime nextRunTime) {
+        this.nextRunTime = nextRunTime;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -162,11 +157,35 @@ public class EmailJobResponseDto {
         this.createdByUserId = createdByUserId;
     }
 
+    public String getEmailTemplateName() {
+        return emailTemplateName;
+    }
+
+    public void setEmailTemplateName(String emailTemplateName) {
+        this.emailTemplateName = emailTemplateName;
+    }
+
+    public UUID getEmailTemplateId() {
+        return emailTemplateId;
+    }
+
+    public void setEmailTemplateId(UUID emailTemplateId) {
+        this.emailTemplateId = emailTemplateId;
+    }
+
     public EmailTemplate getEmailTemplate() {
         return emailTemplate;
     }
 
     public void setEmailTemplate(EmailTemplate emailTemplate) {
         this.emailTemplate = emailTemplate;
+    }
+
+    public EmailTemplateDto getEmailTemplateDto() {
+        return emailTemplateDto;
+    }
+
+    public void setEmailTemplateDto(EmailTemplateDto emailTemplateDto) {
+        this.emailTemplateDto = emailTemplateDto;
     }
 }

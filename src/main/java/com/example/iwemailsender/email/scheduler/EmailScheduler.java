@@ -1,17 +1,14 @@
 package com.example.iwemailsender.email.scheduler;
 
 import com.example.iwemailsender.config.EmailSchedulerConfig;
-import com.example.iwemailsender.email.domain.EmailExecution;
-import com.example.iwemailsender.email.dto.EmailJobResponseDto;
+import com.example.iwemailsender.email.dto.EmailJobDto;
 import com.example.iwemailsender.email.service.EmailJobService;
 import com.example.iwemailsender.email.service.EmailExecutionService;
 import com.example.iwemailsender.email.service.EmailSendingService;
 import com.example.iwemailsender.infrastructure.enums.EmailStatus;
-import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -46,10 +43,10 @@ public class EmailScheduler {
     {
         logger.info("Starting scheduled jobs execution check");
         try{
-            List<EmailJobResponseDto> jobsToExecute=emailJobService.findJobsToExecute();
+            List<EmailJobDto> jobsToExecute=emailJobService.findJobsToExecute();
             logger.info("Found {} jobs to execute", jobsToExecute.size());
 
-            for(EmailJobResponseDto job:jobsToExecute)
+            for(EmailJobDto job:jobsToExecute)
             {
                 executeJob(job);
             }
@@ -59,40 +56,60 @@ public class EmailScheduler {
         }
     }
 
-    private void executeJob(EmailJobResponseDto job)
-    {
+
+    private void executeJob(EmailJobDto job) {
         logger.info("Executing job: {} (ID: {})", job.getId(), job.getId());
-        try{
-            if(!isJobValid(job))
-            {
+        try {
+            if (!isJobValid(job)) {
                 logger.warn("Job {} is not valid for execution", job.getId());
                 return;
             }
-            if(hasExceededMaxRetries(job))
+  /* if(hasExceededMaxRetries(job))
             {
                 logger.warn("Job {} exceeded max retry attempts, sending admin notification", job.getId());
                 notifyAdmin(job);
                 return;
-            }
-            boolean success=attemptEmailSending(job);
-
-            if(success)
-            {
+            }*/
+            boolean success = attemptEmailSending(job);
+            if (success) {
                 handleSuccessfulExecution(job);
+            } else {
+                handleFailedExecution(job);
             }
-
-            //   else{
-         //       handleFailedExecution(job);
-         //   }
-        }catch(Exception e)
-        {
+        } catch (Exception e) {
             logger.error("Unexpected error executing job {}: {}", job.getId(), e.getMessage(), e);
             emailExecutionService.logExecution(job.getId(), EmailStatus.FAIL,
                     "Unexpected error: " + e.getMessage(), 1);
         }
     }
 
-    private boolean isJobValid(EmailJobResponseDto job)
+
+  /*  private void executeJob(EmailJobResponseDto job) {
+        logger.info("Executing job: {} (ID: {})", job.getId(), job.getId());
+
+        try {
+            if (!isJobValid(job)) {
+                logger.warn("Job {} is not valid for execution", job.getId());
+                return;
+            }
+
+            emailSendingService.sendEmailWithTemplate(
+                    job.getSenderEmail(),
+                    job.getReceiverEmails(),
+                    job.getEmailTemplate()
+            );
+
+            emailExecutionService.logExecution(job.getId(), EmailStatus.SUCCESS, null, 1);
+            handleSuccessfulExecution(job);
+
+        } catch (Exception e) {
+            logger.warn("Email sending failed for job {}: {}", job.getId(), e.getMessage());
+            emailExecutionService.logExecution(job.getId(), EmailStatus.FAIL, e.getMessage(), 1);
+            handleFailedExecution(job);
+        }
+    }*/
+
+    private boolean isJobValid(EmailJobDto job)
     {
         LocalDateTime now=LocalDateTime.now();
         if(job.getStartDate()!=null && now.isBefore(job.getStartDate()))
@@ -105,7 +122,8 @@ public class EmailScheduler {
         }
         return job.isEnabled();
     }
-    private boolean hasExceededMaxRetries(EmailJobResponseDto job)
+
+/*   private boolean hasExceededMaxRetries(EmailJobResponseDto job)
     {
         List<EmailExecution> recentExecutions= emailExecutionService.findByJobId(job.getId());
         if(recentExecutions.size() < emailConfig.getRetry().getMaxAttempts())
@@ -123,9 +141,34 @@ public class EmailScheduler {
             }
         }
         return consecutiveFailures>=emailConfig.getRetry().getMaxAttempts();
+    }*/
+
+    private boolean attemptEmailSending(EmailJobDto job) {
+        if (job.getEmailTemplate() == null) {
+            logger.error("Job {} has no associated EmailTemplate", job.getId());
+            emailExecutionService.logExecution(job.getId(), EmailStatus.FAIL, "No EmailTemplate associated", 1);
+            return false;
+        }
+
+        try {
+            logger.info("Attempting to send email for job {}", job.getId());
+            emailSendingService.sendEmailWithTemplate(
+                    job.getId(),
+                    job.getSenderEmail(),
+                    job.getReceiverEmails(),
+                    job.getEmailTemplate()
+            );
+
+            emailExecutionService.logExecution(job.getId(), EmailStatus.SUCCESS, null, 1);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Email sending failed for job {}: {}", job.getId(), e.getMessage());
+            return false;
+        }
     }
 
-    private boolean attemptEmailSending(EmailJobResponseDto job)
+
+/*    private boolean attemptEmailSending(EmailJobResponseDto job)
     {
         int attempt=1;
         if(job.getEmailTemplate()==null)
@@ -169,9 +212,10 @@ public class EmailScheduler {
             }
         }
         return false;
-    }
+    } */
 
-    private void handleSuccessfulExecution(EmailJobResponseDto job)
+
+    private void handleSuccessfulExecution(EmailJobDto job)
     {
         logger.info("Successfully executed job {}", job.getId());
 
@@ -185,7 +229,7 @@ public class EmailScheduler {
         }
     }
 
-/*    private void handleFailedExecution(EmailJobResponseDto job)
+    private void handleFailedExecution(EmailJobDto job)
     {
         logger.warn("Failed to execute job {} after {} attempts", job.getId(), emailConfig.getRetry().getMaxAttempts());
 
@@ -195,9 +239,9 @@ public class EmailScheduler {
             nextRunTime=nextRunTime.plusMinutes(30);
             emailJobService.updateNextRunTime(job.getId(),nextRunTime);
         }
-    }*/
+    }
 
-    private LocalDateTime calculateNextRunTime(EmailJobResponseDto job) {
+    private LocalDateTime calculateNextRunTime(EmailJobDto job) {
         LocalDateTime now = LocalDateTime.now();
 
         if (job.isOneTime()) {
@@ -237,7 +281,7 @@ public class EmailScheduler {
         return nextRun;
     }
 
-    private void notifyAdmin(EmailJobResponseDto job) {
+   /* private void notifyAdmin(EmailJobResponseDto job) {
         try {
             String subject = "Email Job Failure Alert - Job: " + job.getId();
             String templateInfo = job.getEmailTemplate() != null ?
@@ -263,12 +307,14 @@ public class EmailScheduler {
         } catch (Exception e) {
             logger.error("Failed to send admin notification for job {}: {}", job.getId(), e.getMessage());
         }
-    }
-/*    public void triggerExecutionDate(UUID jobId)
+    }*/
+
+   public void triggerExecutionDate(UUID jobId)
     {
         logger.info("Manually triggering execution for job {}", jobId);
 
         emailJobService.findById(jobId).ifPresentOrElse(this::executeJob,
                 () -> logger.warn("Job {} not found for manual execution", jobId));
-    }*/
+    }
 }
+

@@ -1,7 +1,6 @@
 package com.example.iwemailsender.email.api;
 
-import com.example.iwemailsender.email.dto.CreateEmailTemplateRequestDto;
-import com.example.iwemailsender.email.dto.EmailTemplateResponseDto;
+import com.example.iwemailsender.email.dto.EmailTemplateDto;
 import com.example.iwemailsender.email.service.EmailTemplateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,30 +21,30 @@ public class EmailTemplateController {
     }
 
     @PostMapping
-    public ResponseEntity<EmailTemplateResponseDto> createTemplate(@RequestBody CreateEmailTemplateRequestDto request) {
-        Optional<EmailTemplateResponseDto> savedTemplate = emailTemplateService.save(request);
+    public ResponseEntity<EmailTemplateDto> createTemplate(@RequestBody EmailTemplateDto request) {
+        Optional<EmailTemplateDto> savedTemplate = emailTemplateService.save(request);
         return savedTemplate
                 .map(dto -> ResponseEntity.status(HttpStatus.CREATED).body(dto))
                 .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<EmailTemplateResponseDto>> getAllTemplates() {
-        List<EmailTemplateResponseDto> templates = emailTemplateService.findAll();
+    public ResponseEntity<List<EmailTemplateDto>> getAllTemplates() {
+        List<EmailTemplateDto> templates = emailTemplateService.findAll();
         return ResponseEntity.ok(templates);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EmailTemplateResponseDto> getTemplateById(@PathVariable UUID id) {
-        Optional<EmailTemplateResponseDto> template = emailTemplateService.findById(id);
+    public ResponseEntity<EmailTemplateDto> getTemplateById(@PathVariable UUID id) {
+        Optional<EmailTemplateDto> template = emailTemplateService.findById(id);
         return template
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EmailTemplateResponseDto> updateTemplate(@PathVariable UUID id, @RequestBody CreateEmailTemplateRequestDto request) {
-        Optional<EmailTemplateResponseDto> updatedTemplate = emailTemplateService.update(id, request);
+    public ResponseEntity<EmailTemplateDto> updateTemplate(@PathVariable UUID id, @RequestBody EmailTemplateDto request) {
+        Optional<EmailTemplateDto> updatedTemplate = emailTemplateService.update(id, request);
         return updatedTemplate
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -53,7 +52,7 @@ public class EmailTemplateController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTemplate(@PathVariable UUID id) {
-        Optional<EmailTemplateResponseDto> template = emailTemplateService.findById(id);
+        Optional<EmailTemplateDto> template = emailTemplateService.findById(id);
         if (template.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

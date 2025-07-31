@@ -14,7 +14,6 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "email_executions")
-@Data
 public class EmailExecution extends BaseEntity{
 
     private EmailStatus status;

@@ -3,8 +3,7 @@ package com.example.iwemailsender.email.service.impl;
 import com.example.iwemailsender.email.domain.EmailJob;
 import com.example.iwemailsender.email.domain.EmailTemplate;
 import com.example.iwemailsender.email.domain.User;
-import com.example.iwemailsender.email.dto.CreateEmailJobRequestDto;
-import com.example.iwemailsender.email.dto.EmailJobResponseDto;
+import com.example.iwemailsender.email.dto.EmailJobDto;
 import com.example.iwemailsender.email.mapper.EmailJobMapper;
 import com.example.iwemailsender.email.repository.EmailJobRepository;
 import com.example.iwemailsender.email.repository.EmailTemplateRepository;
@@ -22,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-
 @Service
 public class EmailJobServiceImpl implements EmailJobService {
 
@@ -30,29 +28,36 @@ public class EmailJobServiceImpl implements EmailJobService {
     private final UserRepository userRepository;
     private final EmailJobMapper emailJobMapper;
     private final EmailTemplateRepository emailTemplateRepository;
-    public EmailJobServiceImpl(EmailJobRepository emailJobrepository, UserRepository userRepository, EmailJobMapper emailJobMapper, EmailJobRepository emailJobRepository, EmailTemplateRepository emailTemplateRepository) {
-        this.emailJobRepository = emailJobrepository;
+
+    public EmailJobServiceImpl(EmailJobRepository emailJobRepository,
+                               UserRepository userRepository,
+                               EmailJobMapper emailJobMapper,
+                               EmailTemplateRepository emailTemplateRepository) {
+        this.emailJobRepository = emailJobRepository;
         this.userRepository = userRepository;
         this.emailJobMapper = emailJobMapper;
         this.emailTemplateRepository = emailTemplateRepository;
     }
-  /*  public Optional<EmailJobResponseDto> save(CreateEmailJobRequestDto request) {
+
+    /*
+    public Optional<EmailJobDto> save(CreateEmailJobRequestDto request) {
         try {
             EmailJob emailJob = emailJobMapper.toEntity(request);
             emailJob.setRecurrencePattern(request.getRecurrencePattern());
             emailJob.setNextRunTime(request.getStartDate());
             emailJob.setEnabled(true);
             emailJob.setOneTime(false);
-          // emailJob.setCreatedBy(emailJob.getCreatedBy());
             EmailJob saved = emailJobRepository.save(emailJob);
-            return Optional.of(emailJobMapper.toResponseDTO(saved));
+            return Optional.of(emailJobMapper.toDto(saved));
         } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();
         }
-    }*/
+    }
+    */
 
-   public Optional<EmailJobResponseDto> save(UUID userId, CreateEmailJobRequestDto request) {
+    @Override
+    public Optional<EmailJobDto> save(UUID userId, EmailJobDto request) {
         try {
             Optional<User> userOpt = userRepository.findById(userId);
             if (userOpt.isEmpty()) {
@@ -66,33 +71,34 @@ public class EmailJobServiceImpl implements EmailJobService {
             emailJob.setEnabled(true);
             emailJob.setOneTime(false);
 
-           //EmailJob emailJob = emailJobMapper.toEntity(request);
-
-            if (request.getEmailTemplate() != null && request.getEmailTemplate().getId() != null) {
-                emailTemplateRepository.findById(request.getEmailTemplate().getId())
+            if (request.getEmailTemplateId() != null) {
+                emailTemplateRepository.findById(request.getEmailTemplateId())
                         .ifPresent(emailJob::setEmailTemplate);
             }
 
             EmailJob saved = emailJobRepository.save(emailJob);
-            return Optional.of(emailJobMapper.toResponseDTO(saved));
+            return Optional.of(emailJobMapper.toDto(saved));
         } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();
         }
     }
 
+
     @Override
-    public List<EmailJobResponseDto> findAll() {
-        return emailJobRepository.findAll().stream().map(emailJobMapper::toResponseDTO).collect(Collectors.toList());
+    public List<EmailJobDto> findAll() {
+        return emailJobRepository.findAll().stream()
+                .map(emailJobMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<EmailJobResponseDto> findById(UUID id) {
-        return emailJobRepository.findById(id).map(emailJobMapper::toResponseDTO);
+    public Optional<EmailJobDto> findById(UUID id) {
+        return emailJobRepository.findById(id).map(emailJobMapper::toDto);
     }
 
     @Override
-    public Optional<EmailJobResponseDto> update(UUID id, UUID userId, CreateEmailJobRequestDto request) {
+    public Optional<EmailJobDto> update(UUID id, UUID userId, EmailJobDto request) {
         if (!emailJobRepository.existsById(id)) {
             return Optional.empty();
         }
@@ -108,7 +114,7 @@ public class EmailJobServiceImpl implements EmailJobService {
         job.setNextRunTime(request.getStartDate());
 
         EmailJob saved = emailJobRepository.save(job);
-        return Optional.of(emailJobMapper.toResponseDTO(saved));
+        return Optional.of(emailJobMapper.toDto(saved));
     }
 
     @Override
@@ -118,8 +124,8 @@ public class EmailJobServiceImpl implements EmailJobService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EmailJobResponseDto> findJobsToExecute() {
-        return emailJobMapper.toResponseDTOList(emailJobRepository.findJobsToExecute(LocalDateTime.now()));
+    public List<EmailJobDto> findJobsToExecute() {
+        return emailJobMapper.toDtoList(emailJobRepository.findJobsToExecute(LocalDateTime.now()));
     }
 
     @Override
@@ -131,20 +137,20 @@ public class EmailJobServiceImpl implements EmailJobService {
     }
 
     @Override
-    public List<EmailJobResponseDto> findByUserId(UUID userId) {
-        return emailJobMapper.toResponseDTOList(emailJobRepository.findByCreatedById(userId));
+    public List<EmailJobDto> findByUserId(UUID userId) {
+        return emailJobMapper.toDtoList(emailJobRepository.findByCreatedById(userId));
     }
 
     @Override
-    public Optional<EmailJobResponseDto> createJob(UUID userId, String senderEmail, String receiveEmails, RecurrencePattern pattern, LocalDateTime startDate, LocalTime sendTime) {
-        CreateEmailJobRequestDto dto = new CreateEmailJobRequestDto();
+    public Optional<EmailJobDto> createJob(UUID userId, String senderEmail, String receiveEmails, RecurrencePattern pattern, LocalDateTime startDate, LocalTime sendTime) {
+        EmailJobDto dto = new EmailJobDto();
         dto.setSenderEmail(senderEmail);
-        dto.setReceiveEmails(receiveEmails);
+        dto.setReceiverEmails(receiveEmails);
         dto.setRecurrencePattern(pattern);
         dto.setStartDate(startDate);
         dto.setSendTime(sendTime);
 
-        return save(userId,dto);
+        return save(userId, dto);
     }
 
     @Override
@@ -173,5 +179,3 @@ public class EmailJobServiceImpl implements EmailJobService {
         }
     }
 }
-
-

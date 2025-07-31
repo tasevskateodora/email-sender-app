@@ -1,8 +1,7 @@
 package com.example.iwemailsender.email.service.impl;
 
 import com.example.iwemailsender.email.domain.Role;
-import com.example.iwemailsender.email.dto.CreateRoleRequestDto;
-import com.example.iwemailsender.email.dto.RoleResponseDto;
+import com.example.iwemailsender.email.dto.RoleDto;
 import com.example.iwemailsender.email.mapper.RoleMapper;
 import com.example.iwemailsender.email.repository.RoleRepository;
 import com.example.iwemailsender.email.service.RoleService;
@@ -26,33 +25,33 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Optional<RoleResponseDto> save(CreateRoleRequestDto createRoleRequestDto) {
-        Role role = roleMapper.toEntity(createRoleRequestDto);
+    public Optional<RoleDto> save(RoleDto roleDto) {
+        Role role = roleMapper.toEntity(roleDto);
 
         if (role.getId() == null && roleRepository.findByName(role.getName()).isPresent()) {
             return Optional.empty();
         }
 
         Role savedRole = roleRepository.save(role);
-        return Optional.of(roleMapper.toResponseDTO(savedRole));
+        return Optional.of(roleMapper.toDto(savedRole));
     }
 
     @Override
-    public List<RoleResponseDto> findAll() {
+    public List<RoleDto> findAll() {
         List<Role> roles = roleRepository.findAll();
         return roles.stream()
-                .map(roleMapper::toResponseDTO)
+                .map(roleMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<RoleResponseDto> findById(UUID id) {
+    public Optional<RoleDto> findById(UUID id) {
         return roleRepository.findById(id)
-                .map(roleMapper::toResponseDTO);
+                .map(roleMapper::toDto);
     }
 
     @Override
-    public Optional<RoleResponseDto> update(UUID id, CreateRoleRequestDto request) {
+    public Optional<RoleDto> update(UUID id, RoleDto request) {
         Optional<Role> existingRoleOpt = roleRepository.findById(id);
         if (existingRoleOpt.isEmpty()) {
             return Optional.empty();
@@ -63,7 +62,7 @@ public class RoleServiceImpl implements RoleService {
         existingRole.setUpdatedAt(LocalDateTime.now());
 
         Role savedRole = roleRepository.save(existingRole);
-        return Optional.of(roleMapper.toResponseDTO(savedRole));
+        return Optional.of(roleMapper.toDto(savedRole));
     }
 
 
@@ -77,17 +76,17 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Optional<RoleResponseDto> findByName(String name) {
+    public Optional<RoleDto> findByName(String name) {
         return roleRepository.findByName(name)
-                .map(roleMapper::toResponseDTO);
+                .map(roleMapper::toDto);
     }
 
     @Override
-    public Optional<RoleResponseDto> createRole(String name) {
+    public Optional<RoleDto> createRole(String name) {
         if (roleRepository.findByName(name).isPresent()) {
             return Optional.empty();
         }
-        CreateRoleRequestDto dto = new CreateRoleRequestDto();
+        RoleDto dto = new RoleDto();
         dto.setName(name);
         return save(dto);
     }

@@ -1,7 +1,6 @@
 package com.example.iwemailsender.email.service;
 
-import com.example.iwemailsender.email.dto.CreateRoleRequestDto;
-import com.example.iwemailsender.email.dto.RoleResponseDto;
+import com.example.iwemailsender.email.dto.RoleDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,12 +8,18 @@ import java.util.UUID;
 
 public interface RoleService {
 
+    Optional<RoleDto> save(RoleDto roleDto);
 
-    Optional<RoleResponseDto> save(CreateRoleRequestDto createRoleRequestDto);
-    List<RoleResponseDto> findAll();
-    Optional<RoleResponseDto> findById(UUID id);
-    Optional<RoleResponseDto> update(UUID id, CreateRoleRequestDto createRoleRequestDto);
+    List<RoleDto> findAll();
+
+    Optional<RoleDto> findById(UUID id);
+
+    Optional<RoleDto> update(UUID id, RoleDto roleDto);
+
     boolean deleteById(UUID id);
-    Optional<RoleResponseDto> findByName(String name);
-    Optional<RoleResponseDto> createRole(String name);
+
+    Optional<RoleDto> findByName(String name);
+
+    Optional<RoleDto> createRole(String name);
 }
+

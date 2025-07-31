@@ -14,7 +14,6 @@ import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
 public class Role extends BaseEntity{
 
     private String name;

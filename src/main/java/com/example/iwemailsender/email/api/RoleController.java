@@ -1,7 +1,6 @@
 package com.example.iwemailsender.email.api;
 
-import com.example.iwemailsender.email.dto.CreateRoleRequestDto;
-import com.example.iwemailsender.email.dto.RoleResponseDto;
+import com.example.iwemailsender.email.dto.RoleDto;
 import com.example.iwemailsender.email.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,30 +21,30 @@ public class RoleController {
     }
 
     @PostMapping
-    public ResponseEntity<RoleResponseDto> createRole(@RequestBody CreateRoleRequestDto request) {
-        Optional<RoleResponseDto> savedRole = roleService.save(request);
+    public ResponseEntity<RoleDto> createRole(@RequestBody RoleDto roleDto) {
+        Optional<RoleDto> savedRole = roleService.save(roleDto);
         return savedRole
                 .map(dto -> ResponseEntity.status(HttpStatus.CREATED).body(dto))
                 .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
-        List<RoleResponseDto> roles = roleService.findAll();
+    public ResponseEntity<List<RoleDto>> getAllRoles() {
+        List<RoleDto> roles = roleService.findAll();
         return ResponseEntity.ok(roles);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleResponseDto> getRoleById(@PathVariable UUID id) {
-        Optional<RoleResponseDto> role = roleService.findById(id);
+    public ResponseEntity<RoleDto> getRoleById(@PathVariable UUID id) {
+        Optional<RoleDto> role = roleService.findById(id);
         return role
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoleResponseDto> updateRole(@PathVariable UUID id, @RequestBody CreateRoleRequestDto request) {
-        Optional<RoleResponseDto> updatedRole = roleService.update(id, request);
+    public ResponseEntity<RoleDto> updateRole(@PathVariable UUID id, @RequestBody RoleDto roleDto) {
+        Optional<RoleDto> updatedRole = roleService.update(id, roleDto);
         return updatedRole
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -53,7 +52,7 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRole(@PathVariable UUID id) {
-        Optional<RoleResponseDto> role = roleService.findById(id);
+        Optional<RoleDto> role = roleService.findById(id);
         if (role.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

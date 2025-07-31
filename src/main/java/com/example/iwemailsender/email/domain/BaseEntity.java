@@ -10,7 +10,6 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 @MappedSuperclass
-@Data
 public class BaseEntity {
 
     @Id

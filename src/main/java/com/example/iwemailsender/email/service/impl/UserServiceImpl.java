@@ -2,9 +2,7 @@ package com.example.iwemailsender.email.service.impl;
 
 import com.example.iwemailsender.email.domain.Role;
 import com.example.iwemailsender.email.domain.User;
-import com.example.iwemailsender.email.dto.CreateRoleRequestDto;
-import com.example.iwemailsender.email.dto.CreateUserRequestDto;
-import com.example.iwemailsender.email.dto.UserResponseDto;
+import com.example.iwemailsender.email.dto.UserDto;
 import com.example.iwemailsender.email.mapper.UserMapper;
 import com.example.iwemailsender.email.repository.RoleRepository;
 import com.example.iwemailsender.email.repository.UserRepository;
@@ -34,7 +32,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserResponseDto> save(CreateUserRequestDto userRequest) {
+    public Optional<UserDto> save(UserDto userRequest) {
         System.out.println("Saving user: " + userRequest.getUsername());
         try {
             if (userRepository.findByUsername(userRequest.getUsername()).isPresent()) {
@@ -55,7 +53,7 @@ public class UserServiceImpl implements UserService {
             }
 
             User savedUser = userRepository.save(user);
-            return Optional.of(userMapper.toResponseDTO(savedUser));
+            return Optional.of(userMapper.toDto(savedUser));
         } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();
@@ -65,21 +63,21 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public List<UserResponseDto> findAll() {
+    public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(userMapper::toResponseDTO)
+                .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<UserResponseDto> findById(UUID id) {
+    public Optional<UserDto> findById(UUID id) {
         return userRepository.findById(id)
-                .map(userMapper::toResponseDTO);
+                .map(userMapper::toDto);
     }
 
     @Override
-    public Optional<UserResponseDto> update(UUID id, CreateUserRequestDto userRequest) {
+    public Optional<UserDto> update(UUID id, UserDto userRequest) {
         if (!userRepository.existsById(id)) {
             //return Optional.empty();
             throw new RuntimeException("User with" + id + "not found");
@@ -89,7 +87,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         User updatedUser = userRepository.save(user);
-        return Optional.of(userMapper.toResponseDTO(updatedUser));
+        return Optional.of(userMapper.toDto(updatedUser));
     }
 
     @Override
@@ -101,7 +99,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(userMapper::toResponseDTO);
+                .map(userMapper::toDto);
     }
 
     @Override
@@ -110,13 +108,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserResponseDto> createUser(String username, String password) {
+    public Optional<UserDto> createUser(String username, String password) {
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setEnabled(true);
         User savedUser = userRepository.save(user);
-        return Optional.of(userMapper.toResponseDTO(savedUser));
+        return Optional.of(userMapper.toDto(savedUser));
     }
 
     @Override
@@ -138,13 +136,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public void removeRole(UUID userId, CreateRoleRequestDto roleRequest) {
-        Optional<User> userOpt=userRepository.findById(userId);
-        Optional<Role> roleOpt=roleRepository.findByName(roleRequest.getName());
-        if (userOpt.isPresent() && roleOpt.isPresent())
-        {
-            User user=userOpt.get();
-            Role role=roleOpt.get();
+    public void removeRole(UUID userId, String roleName) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        Optional<Role> roleOpt = roleRepository.findByName(roleName);
+        if (userOpt.isPresent() && roleOpt.isPresent()) {
+            User user = userOpt.get();
+            Role role = roleOpt.get();
             user.getRoles().remove(role);
             userRepository.save(user);
         }

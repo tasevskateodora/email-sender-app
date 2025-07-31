@@ -1,8 +1,7 @@
 package com.example.iwemailsender.email.mapper;
 
 import com.example.iwemailsender.email.domain.EmailJob;
-import com.example.iwemailsender.email.dto.CreateEmailJobRequestDto;
-import com.example.iwemailsender.email.dto.EmailJobResponseDto;
+import com.example.iwemailsender.email.dto.EmailJobDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -18,19 +17,20 @@ public interface EmailJobMapper {
     @Mapping(target = "emailTemplate", ignore = true)
     @Mapping(target = "executions", ignore = true)
     @Mapping(target = "nextRunTime", source = "startDate")
-    @Mapping(target = "receiverEmails", source = "receiveEmails")
+    @Mapping(target = "receiverEmails", source = "receiverEmails")
     @Mapping(target = "oneTime", source = "oneTime")
     @Mapping(target = "enabled", source = "enabled")
     @Mapping(target = "sendTime", source = "sendTime")
     @Mapping(target = "recurrencePattern", source = "recurrencePattern")
-    EmailJob toEntity(CreateEmailJobRequestDto dto);
+    EmailJob toEntity(EmailJobDto dto);
 
     @Mapping(target = "createdByUsername", source = "createdBy.username")
     @Mapping(target = "createdByUserId", source = "createdBy.id")
     @Mapping(target = "emailTemplateName", source = "emailTemplate.name")
     @Mapping(target = "emailTemplateId", source = "emailTemplate.id")
     @Mapping(source = "emailTemplate", target = "emailTemplate")
-    EmailJobResponseDto toResponseDTO(EmailJob job);
+    EmailJobDto toDto(EmailJob job);
 
-    List<EmailJobResponseDto> toResponseDTOList(List<EmailJob> jobs);
+    List<EmailJobDto> toDtoList(List<EmailJob> jobs);
 }
+

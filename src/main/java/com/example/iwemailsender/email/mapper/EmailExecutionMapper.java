@@ -1,7 +1,7 @@
 package com.example.iwemailsender.email.mapper;
 
 import com.example.iwemailsender.email.domain.EmailExecution;
-import com.example.iwemailsender.email.dto.EmailExecutionResponseDto;
+import com.example.iwemailsender.email.dto.EmailExecutionDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,7 +13,7 @@ public interface EmailExecutionMapper {
     @Mapping(target = "emailJobId", source = "emailJob.id")
     @Mapping(target = "jobSenderEmail", source = "emailJob.senderEmail")
     @Mapping(target = "jobReceiverEmails", source = "emailJob.receiverEmails")
-    EmailExecutionResponseDto toResponseDTO(EmailExecution execution);
+    EmailExecutionDto toResponseDTO(EmailExecution execution);
 
-    List<EmailExecutionResponseDto> toResponseDTOList(List<EmailExecution> executions);
+    List<EmailExecutionDto> toResponseDTOList(List<EmailExecution> executions);
 }
