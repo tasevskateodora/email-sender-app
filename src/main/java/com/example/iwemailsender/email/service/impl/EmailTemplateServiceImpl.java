@@ -74,18 +74,4 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         emailTemplateRepository.deleteById(id);
     }
 
-    @Override
-    public Optional<EmailTemplateDto> findByName(String name) {
-        return emailTemplateRepository.findByName(name)
-                .map(emailTemplateMapper::toDto);
-    }
-
-    @Override
-    public Optional<EmailTemplateDto> createTemplate(String name, String subject, String body) {
-        EmailTemplateDto dto = new EmailTemplateDto();
-        dto.setName(name);
-        dto.setSubject(subject);
-        dto.setBody(body);
-        return save(dto);
-    }
 }

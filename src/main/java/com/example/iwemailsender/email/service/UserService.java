@@ -15,7 +15,6 @@ public interface UserService {
     String deleteById(UUID id);
     Optional<UserDto> findByUsername(String username);
     boolean existsByUsername(String username);
-    Optional<UserDto> createUser(String username, String password);
     void assignRole(UUID userId, String roleName);
     void removeRole(UUID userId, String roleName);
 }

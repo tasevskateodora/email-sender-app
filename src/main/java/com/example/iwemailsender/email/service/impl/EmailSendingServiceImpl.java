@@ -1,7 +1,9 @@
- package com.example.iwemailsender.email.service.impl;
+package com.example.iwemailsender.email.service.impl;
 
 import com.example.iwemailsender.config.EmailSchedulerConfig;
 import com.example.iwemailsender.email.domain.EmailTemplate;
+import com.example.iwemailsender.email.dto.EmailDto;
+import com.example.iwemailsender.email.dto.LogExecutionDto;
 import com.example.iwemailsender.email.service.EmailExecutionService;
 import com.example.iwemailsender.email.service.EmailSendingService;
 import com.example.iwemailsender.infrastructure.enums.EmailStatus;
@@ -28,7 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
- @Service
+@Service
 public class EmailSendingServiceImpl implements EmailSendingService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailSendingServiceImpl.class);
@@ -46,42 +48,39 @@ public class EmailSendingServiceImpl implements EmailSendingService {
 
 
     @Override
-    public void sendEmail(String from, String to, String subject, String body) throws Exception {
-        logger.info("Sending email from {} to {}", from, to);
+    public void sendEmail(EmailDto request) throws Exception {
+        logger.info("Sending email from {} to {}", request.getFrom(), request.getTo());
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        for (String recipient : request.getTo()) {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(from);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(body, true);
+                helper.setFrom(request.getFrom());
+                helper.setTo(recipient);
+                helper.setSubject(request.getSubject());
+                helper.setText(request.getBody(), true);
 
-            mailSender.send(message);
-            logger.info("Email sent successfully from {} to {}", from, to);
+                mailSender.send(message);
+                logger.info("Email sent successfully to {}", recipient);
 
-        } catch (MessagingException e) {
-            logger.error("Failed to send email from {} to {}: {}", from, to, e.getMessage());
-            throw new Exception("Failed to send email: " + e.getMessage(), e);
-        } catch (Exception e) {
-            logger.error("Unexpected error sending email from {} to {}: {}", from, to, e.getMessage());
-            throw new Exception("Unexpected error sending email: " + e.getMessage(), e);
+            } catch (MessagingException e) {
+                logger.error("Failed to send email to {}: {}", recipient, e.getMessage());
+                throw new Exception("Failed to send email: " + e.getMessage(), e);
+            }
         }
     }
 
     @Override
-    public void sendEmailToMultipleRecipients(String from, String recipients, String subject, String body) throws Exception {
-        logger.info("Sending email from {} to multiple recipients", from);
+    public void sendEmailToMultipleRecipients(EmailDto request) throws Exception {
+        logger.info("Sending email from {} to multiple recipients", request.getFrom());
 
-        List<String> recipientList = parseRecipients(recipients);
         Exception lastException = null;
         int successCount = 0;
         int failureCount = 0;
-
-        for (String recipient : recipientList) {
+        for (String recipient : request.getTo()) {
             try {
-                sendEmail(from, recipient.trim(), subject, body);
+                sendEmail(request);
                 successCount++;
             } catch (Exception e) {
                 lastException = e;
@@ -90,6 +89,9 @@ public class EmailSendingServiceImpl implements EmailSendingService {
             }
         }
 
+        if (lastException != null) {
+            throw new Exception("Some emails failed to send. Last error: " + lastException.getMessage(), lastException);
+        }
         logger.info("Email sending completed. Success: {}", successCount);
 
         if (failureCount > 0 && successCount == 0) {
@@ -99,10 +101,11 @@ public class EmailSendingServiceImpl implements EmailSendingService {
         if (failureCount > 0) {
             logger.warn("Partial failure: {} emails sent successfully", successCount);
         }
+        logger.info("Email sending to multiple recipients completed.");
     }
 
 
-     private List<String> parseRecipients(String recipients) {
+    private List<String> parseRecipients(String recipients) {
         if (recipients == null || recipients.trim().isEmpty()) {
             throw new IllegalArgumentException("Recipients cannot be empty");
         }
@@ -137,9 +140,9 @@ public class EmailSendingServiceImpl implements EmailSendingService {
             mailSender.send(message);
             logger.info("Email with attachment sent successfully from {} to {}", from, to);
         } catch (MessagingException e) {
-        logger.error("Failed to send email with attachment from {} to {}: {}", from, to, e.getMessage());
-        throw new Exception("Failed to send email with attachment: " + e.getMessage(), e);
-    }
+            logger.error("Failed to send email with attachment from {} to {}: {}", from, to, e.getMessage());
+            throw new Exception("Failed to send email with attachment: " + e.getMessage(), e);
+        }
     }
 
     public boolean testConnection() {
@@ -154,11 +157,10 @@ public class EmailSendingServiceImpl implements EmailSendingService {
     }
 
 
-    @Override
     @Retryable(
             value = {Exception.class},
-            maxAttemptsExpression = "#{@emailSchedulerConfig.retry.maxAttempts}",
-            backoff = @Backoff(delayExpression = "#{@emailSchedulerConfig.retry.delaySeconds}")
+            maxAttemptsExpression = "#{@emailSchedulerConfig.maxAttempts}",
+            backoff = @Backoff(delayExpression = "#{@emailSchedulerConfig.delaySeconds}")
     )
     public void sendEmailWithTemplate(UUID jobId, String from, String recipients, EmailTemplate template) throws Exception {
         if (template == null) {
@@ -172,74 +174,59 @@ public class EmailSendingServiceImpl implements EmailSendingService {
         logger.info("Sending email with template '{}' for job {}", template.getName(), jobId);
 
         try {
-            sendEmailToMultipleRecipients(from, recipients, template.getSubject(), template.getBody());
+            List<String> recipientList = parseRecipients(recipients);
+            EmailDto dto = new EmailDto(from, recipientList, template.getSubject(), template.getBody());
+            sendEmail(dto);
         } catch (Exception e) {
             logger.warn("Email sending failed for job {}: {}", jobId, e.getMessage());
             throw e;
         }
     }
 
-     @Recover
-     public void recoverSendEmailWithTemplate(Exception e, UUID jobId, String from, String recipients, EmailTemplate template) {
-         logger.error("All retry attempts failed for sending email for job {}: {}", jobId, e.getMessage());
+    @Recover
+    public void recoverSendEmailWithTemplate(Exception e, UUID jobId, String from, String recipients, EmailTemplate template) {
+        logger.error("All retry attempts failed for sending email for job {}: {}", jobId, e.getMessage());
 
-         try {
-             emailExecutionService.logExecution(jobId, EmailStatus.FAIL, e.getMessage(), emailConfig.getRetry().getMaxAttempts());
-         } catch (Exception logEx) {
-             logger.error("Failed to log execution failure for job {}: {}", jobId, logEx.getMessage());
-         }
+        try {
+            LogExecutionDto dto = new LogExecutionDto();
+            dto.setJobId(jobId);
+            dto.setStatus(EmailStatus.FAIL);
+            dto.setErrorMessage(e.getMessage());
+            dto.setRetryAttempt(emailConfig.getMaxAttempts());
+            emailExecutionService.logExecution(dto);
 
-         try {
-             String subject = "[ALERT] Failed Email Job Notification";
-             String body = String.format(
-                     "The system failed to send an email after multiple retry attempts.\n\n" +
-                             "From: %s\nTo: %s\nTemplate Name: %s\nSubject: %s\n\n" +
-                             "Error: %s\n\n",
-                     from,
-                     recipients,
-                     template != null ? template.getName() : "N/A",
-                     template != null ? template.getSubject() : "N/A",
-                     e.getMessage()
-             );
-
-             mailSender.send(mimeMessage -> {
-                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-                 helper.setFrom("system@company.com");
-                 helper.setTo(emailConfig.getAdmin().getNotificationEmail());
-                 helper.setSubject(subject);
-                 helper.setText(body, false);
-             });
-
-             logger.info("Admin alert email sent after retry failure.");
-         } catch (Exception ex) {
-             logger.error("Failed to send admin notification after retries failed: {}", ex.getMessage());
-         }
-
-         throw new RuntimeException("Retry failed: " + e.getMessage(), e);
-     }
-
-
-     public void sendBulkEmails(String from, List<String> recipients, String subject, String body,
-                               int delayBetweenEmails) throws Exception {
-        logger.info("Starting bulk email sending to {} recipients", recipients.size());
-
-        int sent = 0;
-        for (String recipient : recipients) {
-            try {
-                sendEmail(from, recipient.trim(), subject, body);
-                sent++;
-
-                if (delayBetweenEmails > 0 && sent < recipients.size()) {
-                    Thread.sleep(delayBetweenEmails);
-                }
-
-            } catch (Exception e) {
-                logger.warn("Failed to send bulk email to {}: {}", recipient, e.getMessage());
-            }
+        } catch (Exception logEx) {
+            logger.error("Failed to log execution failure for job {}: {}", jobId, logEx.getMessage());
         }
 
-        logger.info("Bulk email sending completed. Sent {} out of {} emails", sent, recipients.size());
+        try {
+            String subject = "[ALERT] Failed Email Job Notification";
+            String body = String.format(
+                    "The system failed to send an email after multiple retry attempts.\n\n" +
+                            "From: %s\nTo: %s\nTemplate Name: %s\nSubject: %s\n\n" +
+                            "Error: %s\n\n",
+                    from,
+                    recipients,
+                    template != null ? template.getName() : "N/A",
+                    template != null ? template.getSubject() : "N/A",
+                    e.getMessage()
+            );
+
+            mailSender.send(mimeMessage -> {
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+                helper.setFrom("system@company.com");
+                helper.setTo(emailConfig.getNotificationEmail());
+                helper.setSubject(subject);
+                helper.setText(body, false);
+            });
+
+            logger.info("Admin alert email sent after retry failure.");
+        } catch (Exception ex) {
+            logger.error("Failed to send admin notification after retries failed: {}", ex.getMessage());
+        }
+
+        throw new RuntimeException("Retry failed: " + e.getMessage(), e);
     }
 
-}
 
+}

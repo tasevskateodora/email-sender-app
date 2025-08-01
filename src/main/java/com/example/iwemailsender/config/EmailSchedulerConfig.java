@@ -1,31 +1,44 @@
 package com.example.iwemailsender.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+
 @Component
-@ConfigurationProperties(prefix = "app.email")
 public class EmailSchedulerConfig {
 
-    private Retry retry;
-    private Admin admin;
+    @Value("${app.email.retry.max-attempts}")
+    private int maxAttempts;
 
-    public Retry getRetry()
-    {
-        return retry;
+    @Value("${app.email.retry.delay-seconds}")
+    private int delaySeconds;
+
+    @Value("${app.email.admin.notification-email}")
+    private String notificationEmail;
+
+    public int getMaxAttempts() {
+        return maxAttempts;
     }
 
-    public void setRetry(Retry retry)
-    {
-        this.retry=retry;
+    public void setMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
     }
-    public Admin getAdmin()
-    {
-        return admin;
+
+    public int getDelaySeconds() {
+        return delaySeconds;
     }
-    public void setAdmin(Admin admin)
-    {
-        this.admin=admin;
+
+    public void setDelaySeconds(int delaySeconds) {
+        this.delaySeconds = delaySeconds;
+    }
+
+    public String getNotificationEmail() {
+        return notificationEmail;
+    }
+
+    public void setNotificationEmail(String notificationEmail) {
+        this.notificationEmail = notificationEmail;
     }
 }
 

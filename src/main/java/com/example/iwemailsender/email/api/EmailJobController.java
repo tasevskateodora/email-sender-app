@@ -48,7 +48,6 @@ public class EmailJobController {
             @PathVariable UUID id,
             @PathVariable UUID userId,
             @RequestBody EmailJobDto requestDto) {
-
         Optional<EmailJobDto> updated = emailJobService.update(id, userId, requestDto);
 
         return updated.map(ResponseEntity::ok)
@@ -124,28 +123,6 @@ public class EmailJobController {
     }
     */
 
-    @PutMapping("/{id}/toggle")
-    public ResponseEntity<Map<String, Object>> toggleJobStatus(@PathVariable UUID id) {
-        try {
-            emailJobService.toggleJobStatus(id);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Job status toggled successfully");
-            response.put("jobId", id);
-            response.put("timestamp", LocalDateTime.now());
-
-            return ResponseEntity.ok(response);
-
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
 
     @PutMapping("/{id}/enable")
     public ResponseEntity<Map<String, Object>> enableJob(@PathVariable UUID id) {

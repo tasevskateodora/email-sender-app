@@ -81,13 +81,4 @@ public class RoleServiceImpl implements RoleService {
                 .map(roleMapper::toDto);
     }
 
-    @Override
-    public Optional<RoleDto> createRole(String name) {
-        if (roleRepository.findByName(name).isPresent()) {
-            return Optional.empty();
-        }
-        RoleDto dto = new RoleDto();
-        dto.setName(name);
-        return save(dto);
-    }
 }

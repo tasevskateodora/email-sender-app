@@ -22,9 +22,9 @@ public class EmailTemplate extends BaseEntity{
     private String body;
 
 
-    @OneToMany(mappedBy = "emailTemplate", fetch = FetchType.LAZY)
+   /* @OneToMany(mappedBy = "emailTemplate", fetch = FetchType.LAZY)
     //@JsonIgnore
-    private List<EmailJob> emailJobs = new ArrayList<>();
+    private List<EmailJob> emailJobs = new ArrayList<>();*/
 
     public EmailTemplate(String name, String subject, String body ){
         this.name = name;
@@ -61,11 +61,11 @@ public class EmailTemplate extends BaseEntity{
         this.body = body;
     }
 
-    public List<EmailJob> getEmailJobs() {
+ /*   public List<EmailJob> getEmailJobs() {
         return emailJobs;
     }
 
     public void setEmailJobs(List<EmailJob> emailJobs) {
         this.emailJobs = emailJobs;
-    }
+    }*/
 }

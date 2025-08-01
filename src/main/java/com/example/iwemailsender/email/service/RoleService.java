@@ -20,6 +20,5 @@ public interface RoleService {
 
     Optional<RoleDto> findByName(String name);
 
-    Optional<RoleDto> createRole(String name);
 }
 

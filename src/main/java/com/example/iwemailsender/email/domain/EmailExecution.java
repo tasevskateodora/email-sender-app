@@ -16,6 +16,7 @@ import java.util.UUID;
 @Table(name = "email_executions")
 public class EmailExecution extends BaseEntity{
 
+    @Enumerated(EnumType.STRING)
     private EmailStatus status;
     private String errorMessage;
     private int retryAttempt;

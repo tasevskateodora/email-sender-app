@@ -2,6 +2,7 @@ package com.example.iwemailsender.email.scheduler;
 
 import com.example.iwemailsender.config.EmailSchedulerConfig;
 import com.example.iwemailsender.email.dto.EmailJobDto;
+import com.example.iwemailsender.email.dto.LogExecutionDto;
 import com.example.iwemailsender.email.service.EmailJobService;
 import com.example.iwemailsender.email.service.EmailExecutionService;
 import com.example.iwemailsender.email.service.EmailSendingService;
@@ -78,8 +79,16 @@ public class EmailScheduler {
             }
         } catch (Exception e) {
             logger.error("Unexpected error executing job {}: {}", job.getId(), e.getMessage(), e);
-            emailExecutionService.logExecution(job.getId(), EmailStatus.FAIL,
-                    "Unexpected error: " + e.getMessage(), 1);
+            //emailExecutionService.logExecution(job.getId(), EmailStatus.FAIL,
+                    //"Unexpected error: " + e.getMessage(), 1);
+            LogExecutionDto dto = new LogExecutionDto();
+            dto.setJobId(job.getId());
+            dto.setStatus(EmailStatus.FAIL);
+            dto.setErrorMessage("Unexpected error: " + e.getMessage());
+            dto.setRetryAttempt(1);
+
+            emailExecutionService.logExecution(dto);
+
         }
     }
 
@@ -146,7 +155,13 @@ public class EmailScheduler {
     private boolean attemptEmailSending(EmailJobDto job) {
         if (job.getEmailTemplate() == null) {
             logger.error("Job {} has no associated EmailTemplate", job.getId());
-            emailExecutionService.logExecution(job.getId(), EmailStatus.FAIL, "No EmailTemplate associated", 1);
+            LogExecutionDto dto = new LogExecutionDto();
+            dto.setJobId(job.getId());
+            dto.setStatus(EmailStatus.FAIL);
+            dto.setErrorMessage("No EmailTemplate associated");
+            dto.setRetryAttempt(1);
+
+            emailExecutionService.logExecution(dto);
             return false;
         }
 
@@ -159,7 +174,13 @@ public class EmailScheduler {
                     job.getEmailTemplate()
             );
 
-            emailExecutionService.logExecution(job.getId(), EmailStatus.SUCCESS, null, 1);
+            LogExecutionDto dto = new LogExecutionDto();
+            dto.setJobId(job.getId());
+            dto.setStatus(EmailStatus.SUCCESS);
+            dto.setErrorMessage(null);
+            dto.setRetryAttempt(1);
+
+            emailExecutionService.logExecution(dto);
             return true;
         } catch (Exception e) {
             logger.warn("Email sending failed for job {}: {}", job.getId(), e.getMessage());
@@ -231,7 +252,7 @@ public class EmailScheduler {
 
     private void handleFailedExecution(EmailJobDto job)
     {
-        logger.warn("Failed to execute job {} after {} attempts", job.getId(), emailConfig.getRetry().getMaxAttempts());
+        logger.warn("Failed to execute job {} after {} attempts", job.getId(), emailConfig.getMaxAttempts());
 
         LocalDateTime nextRunTime=calculateNextRunTime(job);
         if(nextRunTime!=null)
@@ -309,7 +330,7 @@ public class EmailScheduler {
         }
     }*/
 
-   public void triggerExecutionDate(UUID jobId)
+    public void triggerExecutionDate(UUID jobId)
     {
         logger.info("Manually triggering execution for job {}", jobId);
 
@@ -317,4 +338,3 @@ public class EmailScheduler {
                 () -> logger.warn("Job {} not found for manual execution", jobId));
     }
 }
-

@@ -19,9 +19,6 @@ public interface EmailJobService {
     List<EmailJobDto> findJobsToExecute();
     void updateNextRunTime(UUID jobId, LocalDateTime nextRunTime);
     List<EmailJobDto> findByUserId(UUID userId);
-    Optional<EmailJobDto> createJob(UUID userId, String senderEmail, String receiverEmails,
-                                    RecurrencePattern pattern, LocalDateTime startDate, LocalTime sendTime);
-    void toggleJobStatus(UUID jobId);
     void setJobStatus(UUID jobId, boolean enabled);
 }
 

@@ -14,8 +14,5 @@ public interface EmailTemplateService {
     Optional<EmailTemplateDto> update(UUID id, EmailTemplateDto dto);
     void deleteById(UUID id);
 
-    Optional<EmailTemplateDto> findByName(String name);
-
-    Optional<EmailTemplateDto> createTemplate(String name, String subject, String body);
 }
 

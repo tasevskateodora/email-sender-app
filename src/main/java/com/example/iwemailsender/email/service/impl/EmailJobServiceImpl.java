@@ -135,37 +135,10 @@ public class EmailJobServiceImpl implements EmailJobService {
             emailJobRepository.save(job);
         });
     }
-
     @Override
     public List<EmailJobDto> findByUserId(UUID userId) {
         return emailJobMapper.toDtoList(emailJobRepository.findByCreatedById(userId));
     }
-
-    @Override
-    public Optional<EmailJobDto> createJob(UUID userId, String senderEmail, String receiveEmails, RecurrencePattern pattern, LocalDateTime startDate, LocalTime sendTime) {
-        EmailJobDto dto = new EmailJobDto();
-        dto.setSenderEmail(senderEmail);
-        dto.setReceiverEmails(receiveEmails);
-        dto.setRecurrencePattern(pattern);
-        dto.setStartDate(startDate);
-        dto.setSendTime(sendTime);
-
-        return save(userId, dto);
-    }
-
-    @Override
-    public void toggleJobStatus(UUID jobId) {
-        Optional<EmailJob> jobOpt = emailJobRepository.findById(jobId);
-
-        if (jobOpt.isPresent()) {
-            EmailJob job = jobOpt.get();
-            job.setEnabled(!job.isEnabled());
-            emailJobRepository.save(job);
-        } else {
-            throw new EntityNotFoundException("EmailJob not found with id: " + jobId);
-        }
-    }
-
     @Override
     public void setJobStatus(UUID jobId, boolean enabled) {
         Optional<EmailJob> jobOpt = emailJobRepository.findById(jobId);

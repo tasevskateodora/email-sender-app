@@ -107,15 +107,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsByUsername(username);
     }
 
-    @Override
-    public Optional<UserDto> createUser(String username, String password) {
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setEnabled(true);
-        User savedUser = userRepository.save(user);
-        return Optional.of(userMapper.toDto(savedUser));
-    }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
