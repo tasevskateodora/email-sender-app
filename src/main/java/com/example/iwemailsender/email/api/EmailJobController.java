@@ -4,6 +4,7 @@ import com.example.iwemailsender.email.dto.EmailJobDto;
 import com.example.iwemailsender.email.service.EmailJobService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class EmailJobController {
         this.emailJobService = emailJobService;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/user/{userId}")
     public ResponseEntity<EmailJobDto> createEmailJob(
             @PathVariable UUID userId,
@@ -30,12 +32,14 @@ public class EmailJobController {
                 .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<EmailJobDto>> getAllEmailJobs() {
         List<EmailJobDto> jobs = emailJobService.findAll();
         return ResponseEntity.ok(jobs);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{id}")
     public ResponseEntity<EmailJobDto> getEmailJobById(@PathVariable UUID id) {
         Optional<EmailJobDto> job = emailJobService.findById(id);
@@ -43,6 +47,7 @@ public class EmailJobController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/{id}/user/{userId}")
     public ResponseEntity<EmailJobDto> updateEmailJob(
             @PathVariable UUID id,
@@ -54,76 +59,21 @@ public class EmailJobController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmailJob(@PathVariable UUID id) {
         emailJobService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<EmailJobDto>> getEmailJobsByUser(@PathVariable UUID userId) {
         List<EmailJobDto> jobs = emailJobService.findByUserId(userId);
         return ResponseEntity.ok(jobs);
     }
 
-    /*
-    @PutMapping("/{id}/toggle")
-    public ResponseEntity<EmailJobDto> toggleJobStatus(@PathVariable UUID id) {
-        try {
-            Optional<EmailJobDto> job = emailJobService.findById(id);
-
-            if (job.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            emailJobService.toggleJobStatus(id);
-
-            Optional<EmailJobDto> updatedJob = emailJobService.findById(id);
-            return updatedJob.map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-
-    @PutMapping("/{id}/enable")
-    public ResponseEntity<EmailJobDto> enableJob(@PathVariable UUID id) {
-        try {
-            emailJobService.setJobStatus(id, true);
-
-            Optional<EmailJobDto> updatedJob = emailJobService.findById(id);
-            return updatedJob.map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-
-    @PutMapping("/{id}/disable")
-    public ResponseEntity<EmailJobDto> disableJob(@PathVariable UUID id) {
-        try {
-            emailJobService.setJobStatus(id, false);
-
-            Optional<EmailJobDto> updatedJob = emailJobService.findById(id);
-            return updatedJob.map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/ready-for-execution")
-    public ResponseEntity<List<EmailJobDto>> getJobsReadyForExecution() {
-        List<EmailJobDto> jobs = emailJobService.findJobsToExecute();
-        return ResponseEntity.ok(jobs);
-    }
-    */
-
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/{id}/enable")
     public ResponseEntity<Map<String, Object>> enableJob(@PathVariable UUID id) {
         try {
@@ -148,6 +98,7 @@ public class EmailJobController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/{id}/disable")
     public ResponseEntity<Map<String, Object>> disableJob(@PathVariable UUID id) {
         try {
@@ -171,5 +122,8 @@ public class EmailJobController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-
 }
+
+
+
+

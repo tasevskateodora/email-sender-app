@@ -10,6 +10,7 @@ import com.example.iwemailsender.email.scheduler.EmailScheduler;
 import com.example.iwemailsender.email.service.EmailJobService;
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("api/test/scheduler")
 public class TestController {

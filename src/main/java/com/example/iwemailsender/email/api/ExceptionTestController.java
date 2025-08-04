@@ -5,6 +5,7 @@ import jakarta.persistence.OptimisticLockException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,7 @@ import java.net.ConnectException;
 import java.util.Map;
 
 
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/api/test/exceptions")
 public class ExceptionTestController {

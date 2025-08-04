@@ -65,12 +65,6 @@ public class EmailScheduler {
                 logger.warn("Job {} is not valid for execution", job.getId());
                 return;
             }
-  /* if(hasExceededMaxRetries(job))
-            {
-                logger.warn("Job {} exceeded max retry attempts, sending admin notification", job.getId());
-                notifyAdmin(job);
-                return;
-            }*/
             boolean success = attemptEmailSending(job);
             if (success) {
                 handleSuccessfulExecution(job);
@@ -79,8 +73,6 @@ public class EmailScheduler {
             }
         } catch (Exception e) {
             logger.error("Unexpected error executing job {}: {}", job.getId(), e.getMessage(), e);
-            //emailExecutionService.logExecution(job.getId(), EmailStatus.FAIL,
-                    //"Unexpected error: " + e.getMessage(), 1);
             LogExecutionDto dto = new LogExecutionDto();
             dto.setJobId(job.getId());
             dto.setStatus(EmailStatus.FAIL);
@@ -330,11 +322,11 @@ public class EmailScheduler {
         }
     }*/
 
-    public void triggerExecutionDate(UUID jobId)
+   /* public void triggerExecutionDate(UUID jobId)
     {
         logger.info("Manually triggering execution for job {}", jobId);
 
         emailJobService.findById(jobId).ifPresentOrElse(this::executeJob,
                 () -> logger.warn("Job {} not found for manual execution", jobId));
-    }
+    }*/
 }

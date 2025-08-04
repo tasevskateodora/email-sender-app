@@ -3,6 +3,7 @@ package com.example.iwemailsender.email.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
 
     @Id
@@ -67,3 +69,8 @@ public class BaseEntity {
         return id;
     }
 }
+
+
+
+
+

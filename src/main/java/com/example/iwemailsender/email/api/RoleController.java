@@ -4,6 +4,7 @@ import com.example.iwemailsender.email.dto.RoleDto;
 import com.example.iwemailsender.email.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class RoleController {
         this.roleService = roleService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<RoleDto> createRole(@RequestBody RoleDto roleDto) {
         Optional<RoleDto> savedRole = roleService.save(roleDto);
@@ -28,12 +30,14 @@ public class RoleController {
                 .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<RoleDto>> getAllRoles() {
         List<RoleDto> roles = roleService.findAll();
         return ResponseEntity.ok(roles);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<RoleDto> getRoleById(@PathVariable UUID id) {
         Optional<RoleDto> role = roleService.findById(id);
@@ -42,6 +46,7 @@ public class RoleController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<RoleDto> updateRole(@PathVariable UUID id, @RequestBody RoleDto roleDto) {
         Optional<RoleDto> updatedRole = roleService.update(id, roleDto);
@@ -50,6 +55,7 @@ public class RoleController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRole(@PathVariable UUID id) {
         Optional<RoleDto> role = roleService.findById(id);
