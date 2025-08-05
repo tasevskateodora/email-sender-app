@@ -1,0 +1,158 @@
+<div class="dashboard-container">
+  <!-- Welcome Header -->
+  <div class="welcome-section">
+    <h1 class="welcome-title">
+      {{ getWelcomeMessage() }}, {{ currentUser?.username }}! 👋
+    </h1>
+    <p class="welcome-subtitle">
+      Manage your automated email campaigns from your dashboard
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading your dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!loading">
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card total-jobs">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>email</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-number">{{ stats.totalJobs }}</h3>
+              <p class="stat-label">Total Jobs</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card active-jobs">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>play_circle</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-number">{{ stats.activeJobs }}</h3>
+              <p class="stat-label">Active Jobs</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card pending-jobs">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>pause_circle</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-number">{{ stats.pendingJobs }}</h3>
+              <p class="stat-label">Inactive Jobs</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card completed-today">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-number">{{ stats.completedToday }}</h3>
+              <p class="stat-label">Sent Today</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="action-cards">
+        <mat-card class="action-card" (click)="createNewJob()">
+          <mat-card-content>
+            <mat-icon class="action-icon">add_circle</mat-icon>
+            <h3>Create New Job</h3>
+            <p>Set up a new automated email campaign</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="action-card" (click)="navigateToEmailJobs()">
+          <mat-card-content>
+            <mat-icon class="action-icon">list</mat-icon>
+            <h3>View All Jobs</h3>
+            <p>Manage and monitor your email jobs</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="action-card" *ngIf="isAdmin()">
+          <mat-card-content>
+            <mat-icon class="action-icon">admin_panel_settings</mat-icon>
+            <h3>Admin Panel</h3>
+            <p>Manage users and system settings</p>
+            <small class="coming-soon">Coming Soon</small>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Recent Jobs -->
+    <div class="recent-jobs-section" *ngIf="recentJobs.length > 0">
+      <div class="section-header">
+        <h2 class="section-title">Recent Email Jobs</h2>
+        <button mat-button color="primary" (click)="navigateToEmailJobs()">
+          View All
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+
+      <div class="recent-jobs-list">
+        <mat-card class="job-card" *ngFor="let job of recentJobs">
+          <mat-card-content>
+            <div class="job-header">
+              <div class="job-info">
+                <h4 class="job-title">{{ job.senderEmail }} → {{ job.receiverEmails }}</h4>
+                <p class="job-details">
+                  <mat-icon class="detail-icon">schedule</mat-icon>
+                  {{ formatRecurrence(job.recurrencePattern) }}
+                  <span class="job-status" [ngClass]="job.enabled ? 'status-active' : 'status-inactive'">
+                    • {{ job.enabled ? 'Active' : 'Inactive' }}
+                  </span>
+                </p>
+              </div>
+              <div class="job-actions">
+                <mat-chip [ngClass]="job.enabled ? 'status-chip-active' : 'status-chip-inactive'">
+                  <mat-icon>{{ job.enabled ? 'play_arrow' : 'pause' }}</mat-icon>
+                  {{ job.enabled ? 'Running' : 'Paused' }}
+                </mat-chip>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="recentJobs.length === 0 && !loading">
+      <mat-icon class="empty-icon">inbox</mat-icon>
+      <h3>No Email Jobs Yet</h3>
+      <p>Create your first automated email job to get started!</p>
+      <button mat-raised-button color="primary" (click)="createNewJob()">
+        <mat-icon>add</mat-icon>
+        Create Your First Job
+      </button>
+    </div>
+  </div>
+</div>

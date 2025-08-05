@@ -1,0 +1,146 @@
+<div class="email-jobs-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>email</mat-icon>
+      Email Jobs
+    </h1>
+    <div class="page-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="createNewJob()"
+        *ngIf="canCreateJob()">
+        <mat-icon>add</mat-icon>
+        Create New Job
+      </button>
+      <button
+        mat-icon-button
+        (click)="loadEmailJobs()"
+        matTooltip="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading email jobs...</p>
+  </div>
+
+  <!-- Email Jobs Table -->
+  <mat-card class="table-card" *ngIf="!loading">
+    <mat-card-content>
+      <div class="table-container" *ngIf="emailJobs.length > 0; else noDataTemplate">
+        <table mat-table [dataSource]="emailJobs" class="email-jobs-table">
+
+          <!-- Sender Email Column -->
+          <ng-container matColumnDef="senderEmail">
+            <th mat-header-cell *matHeaderCellDef>Sender</th>
+            <td mat-cell *matCellDef="let job">
+              <div class="email-cell">
+                <mat-icon class="email-icon">send</mat-icon>
+                <span>{{ job.senderEmail }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Receiver Emails Column -->
+          <ng-container matColumnDef="receiverEmails">
+            <th mat-header-cell *matHeaderCellDef>Recipients</th>
+            <td mat-cell *matCellDef="let job">
+              <div class="email-cell">
+                <mat-icon class="email-icon">inbox</mat-icon>
+                <span class="recipient-emails" [matTooltip]="job.receiverEmails">
+                  {{ job.receiverEmails.length > 30 ? (job.receiverEmails | slice:0:30) + '...' : job.receiverEmails }}
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Recurrence Pattern Column -->
+          <ng-container matColumnDef="recurrencePattern">
+            <th mat-header-cell *matHeaderCellDef>Frequency</th>
+            <td mat-cell *matCellDef="let job">
+              <mat-chip class="frequency-chip" [ngClass]="'frequency-' + job.recurrencePattern.toLowerCase()">
+                <mat-icon>schedule</mat-icon>
+                {{ formatRecurrence(job.recurrencePattern) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="enabled">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let job">
+              <mat-slide-toggle
+                [checked]="job.enabled"
+                (change)="toggleJobStatus(job)"
+                [color]="'primary'">
+                <span class="status-text" [ngClass]="job.enabled ? 'status-enabled' : 'status-disabled'">
+                  {{ job.enabled ? 'Enabled' : 'Disabled' }}
+                </span>
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <!-- Next Run Time Column -->
+          <ng-container matColumnDef="nextRunTime">
+            <th mat-header-cell *matHeaderCellDef>Next Run</th>
+            <td mat-cell *matCellDef="let job">
+              <div class="next-run-cell">
+                <mat-icon class="time-icon">access_time</mat-icon>
+                <span class="next-run-time">{{ formatDateTime(job.nextRunTime) }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let job">
+              <div class="action-buttons">
+                <button
+                  mat-icon-button
+                  (click)="editJob(job)"
+                  matTooltip="Edit Job"
+                  color="primary">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="deleteJob(job)"
+                  matTooltip="Delete Job"
+                  color="warn"
+                  *ngIf="canDeleteJob()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="email-job-row"></tr>
+        </table>
+      </div>
+
+      <!-- No Data Template -->
+      <ng-template #noDataTemplate>
+        <div class="no-data-container">
+          <mat-icon class="no-data-icon">inbox</mat-icon>
+          <h3>No Email Jobs Found</h3>
+          <p>Create your first email job to get started with automated email scheduling.</p>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="createNewJob()"
+            *ngIf="canCreateJob()">
+            <mat-icon>add</mat-icon>
+            Create Your First Job
+          </button>
+        </div>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+</div>

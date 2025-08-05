@@ -1,0 +1,239 @@
+.email-jobs-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+  color: #333;
+}
+
+.page-title mat-icon {
+  font-size: 32px;
+  color: #1976d2;
+}
+
+.page-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+.table-card {
+  margin-top: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.email-jobs-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+.email-job-row {
+  transition: background-color 0.2s ease;
+}
+
+.email-job-row:hover {
+  background-color: #f5f5f5;
+}
+
+/* Cell Styles */
+.email-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email-icon {
+  font-size: 18px;
+  color: #666;
+}
+
+.recipient-emails {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frequency-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-weight: 500;
+}
+
+.frequency-chip mat-icon {
+  font-size: 16px;
+}
+
+.frequency-daily {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.frequency-weekly {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.frequency-monthly {
+  background-color: #e8f5e8;
+  color: #388e3c;
+}
+
+.frequency-yearly {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.status-text {
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.status-enabled {
+  color: #4caf50;
+}
+
+.status-disabled {
+  color: #f44336;
+}
+
+.next-run-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-icon {
+  font-size: 16px;
+  color: #666;
+}
+
+.next-run-time {
+  font-size: 13px;
+  color: #333;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.action-buttons button {
+  width: 36px;
+  height: 36px;
+}
+
+/* No Data Styles */
+.no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+}
+
+.no-data-icon {
+  font-size: 64px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.no-data-container h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.no-data-container p {
+  margin: 0 0 24px 0;
+  color: #666;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .email-jobs-container {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .page-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .table-container {
+    font-size: 14px;
+  }
+
+  .recipient-emails {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 600px) {
+  .displayedColumns {
+    /* Hide some columns on mobile */
+  }
+
+  .next-run-time {
+    display: none;
+  }
+
+  .frequency-chip {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}

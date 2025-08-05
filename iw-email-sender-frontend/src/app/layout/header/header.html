@@ -1,0 +1,87 @@
+<mat-toolbar color="primary" class="app-header" *ngIf="isLoggedIn()">
+  <!-- Logo and Title -->
+  <div class="header-brand" (click)="navigateTo('/dashboard')">
+    <mat-icon class="brand-icon">email</mat-icon>
+    <span class="brand-title">IW Email Sender</span>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="header-nav">
+    <button
+      mat-button
+      class="nav-button"
+      (click)="navigateTo('/dashboard')"
+      routerLinkActive="active"
+      routerLink="/dashboard">
+      <mat-icon>dashboard</mat-icon>
+      Dashboard
+    </button>
+
+    <button
+      mat-button
+      class="nav-button"
+      (click)="navigateTo('/email-jobs')"
+      routerLinkActive="active"
+      routerLink="/email-jobs">
+      <mat-icon>email</mat-icon>
+      Email Jobs
+    </button>
+  </nav>
+
+  <!-- Spacer -->
+  <span class="header-spacer"></span>
+
+  <!-- User Menu -->
+  <div class="user-menu" *ngIf="currentUser">
+    <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
+      <mat-icon>account_circle</mat-icon>
+      <span class="username">{{ currentUser?.username }}</span>
+      <span class="user-role" *ngIf="isAdmin()">(Admin)</span>
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <div class="user-info">
+        <div class="user-details">
+          <strong>{{ currentUser?.username }}</strong>
+          <small>{{ currentUser?.email }}</small>
+          <div class="user-roles">
+            <mat-chip
+              *ngFor="let role of currentUser.roles"
+              class="role-chip"
+              [ngClass]="role.name === 'ROLE_ADMIN' ? 'admin-chip' : 'user-chip'">
+              {{ role.name.replace('ROLE_', '') }}
+            </mat-chip>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <button mat-menu-item (click)="navigateTo('/dashboard')">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </button>
+
+      <button mat-menu-item (click)="navigateTo('/email-jobs')">
+        <mat-icon>email</mat-icon>
+        <span>My Email Jobs</span>
+      </button>
+
+      <div *ngIf="isAdmin()">
+        <mat-divider></mat-divider>
+        <button mat-menu-item disabled>
+          <mat-icon>admin_panel_settings</mat-icon>
+          <span>Admin Panel (Coming Soon)</span>
+        </button>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <button mat-menu-item (click)="logout()" class="logout-item">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </div>
+</mat-toolbar>
