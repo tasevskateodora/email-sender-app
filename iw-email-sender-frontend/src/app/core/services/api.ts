@@ -1,14 +1,23 @@
-/*
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { EmailTemplate } from '../../shared/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Api {
+  private baseUrl = 'http://localhost:8080/api/email-templates'; // прилагоди ја URL-то
 
+  constructor(private http: HttpClient) {}
+
+  getTemplates(): Observable<EmailTemplate[]> {
+    return this.http.get<EmailTemplate[]>(this.baseUrl);
+  }
 }
-*/
 
+
+/*
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -125,3 +134,4 @@ export class UserService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
+*/

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../core/services/auth';
-import { EmailJobService } from '../../core/services/api';
 import { EmailJob, User } from '../../shared/models';
+import { JobModalComponent } from '../email-jobs/job-modal/job-modal.component';
 
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -10,6 +11,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialogModule } from '@angular/material/dialog';
+
+import { EmailJobService } from '../../core/services/email-job.service';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -20,7 +25,9 @@ import { MatChipsModule } from '@angular/material/chips';
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    MatChipsModule
+    MatChipsModule,
+    MatDialogModule,
+    RouterLink
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
@@ -31,7 +38,6 @@ export class DashboardComponent implements OnInit {
   stats = {
     totalJobs: 0,
     activeJobs: 0,
-    completedToday: 0,
     pendingJobs: 0
   };
   loading = false;
@@ -39,7 +45,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private emailJobService: EmailJobService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -52,7 +59,11 @@ export class DashboardComponent implements OnInit {
 
     this.loading = true;
 
-    this.emailJobService.getEmailJobsByUser(this.currentUser.id!).subscribe({
+    const loadObservable = this.authService.isAdmin()
+      ? this.emailJobService.getAll()
+      : this.emailJobService.getByUserId(this.currentUser.id!);
+
+    loadObservable.subscribe({
       next: (jobs) => {
         this.recentJobs = jobs.slice(0, 5);
         this.calculateStats(jobs);
@@ -69,7 +80,6 @@ export class DashboardComponent implements OnInit {
     this.stats.totalJobs = jobs.length;
     this.stats.activeJobs = jobs.filter(job => job.enabled).length;
     this.stats.pendingJobs = jobs.filter(job => !job.enabled).length;
-    this.stats.completedToday = 0; // Placeholder
   }
 
   navigateToEmailJobs(): void {
@@ -77,7 +87,19 @@ export class DashboardComponent implements OnInit {
   }
 
   createNewJob(): void {
-    this.router.navigate(['/email-jobs']);
+    const dialogRef = this.dialog.open(JobModalComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      disableClose: true,
+      data: { mode: 'create' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadDashboardData();
+      }
+    });
   }
 
   getWelcomeMessage(): string {
@@ -94,4 +116,5 @@ export class DashboardComponent implements OnInit {
   formatRecurrence(pattern: string): string {
     return pattern.toLowerCase().charAt(0).toUpperCase() + pattern.toLowerCase().slice(1);
   }
+
 }

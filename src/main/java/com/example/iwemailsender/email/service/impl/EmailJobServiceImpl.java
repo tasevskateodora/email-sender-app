@@ -39,23 +39,6 @@ public class EmailJobServiceImpl implements EmailJobService {
         this.emailTemplateRepository = emailTemplateRepository;
     }
 
-    /*
-    public Optional<EmailJobDto> save(CreateEmailJobRequestDto request) {
-        try {
-            EmailJob emailJob = emailJobMapper.toEntity(request);
-            emailJob.setRecurrencePattern(request.getRecurrencePattern());
-            emailJob.setNextRunTime(request.getStartDate());
-            emailJob.setEnabled(true);
-            emailJob.setOneTime(false);
-            EmailJob saved = emailJobRepository.save(emailJob);
-            return Optional.of(emailJobMapper.toDto(saved));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-    */
-
     @Override
     public Optional<EmailJobDto> save(UUID userId, EmailJobDto request) {
         try {
@@ -94,13 +77,23 @@ public class EmailJobServiceImpl implements EmailJobService {
 
     @Override
     public Optional<EmailJobDto> findById(UUID id) {
-        return emailJobRepository.findById(id).map(emailJobMapper::toDto);
+       // return emailJobRepository.findById(id).map(emailJobMapper::toDto);
+        return emailJobRepository.findWithTemplateById(id)
+                .map(emailJobMapper::toDto);
     }
 
     @Override
     public Optional<EmailJobDto> update(UUID id, UUID userId, EmailJobDto request) {
-        if (!emailJobRepository.existsById(id)) {
+
+        Optional<EmailJob> existingOpt = emailJobRepository.findById(id);
+
+        if (existingOpt.isEmpty()) {
+            System.out.println("Job not found: " + id);
             return Optional.empty();
+        }
+        EmailJob existing = existingOpt.get();
+        if (existing.getEmailTemplate() == null) {
+            System.out.println("Job has no template - will be fixed during update");
         }
 
         Optional<User> userOpt = userRepository.findById(userId);
@@ -108,12 +101,24 @@ public class EmailJobServiceImpl implements EmailJobService {
             return Optional.empty();
         }
 
-        EmailJob job = emailJobMapper.toEntity(request);
-        job.setId(id);
-        job.setCreatedBy(userOpt.get());
-        job.setNextRunTime(request.getStartDate());
+        existing.setStartDate(request.getStartDate());
+        existing.setEndDate(request.getEndDate());
+        existing.setRecurrencePattern(request.getRecurrencePattern());
+        existing.setSenderEmail(request.getSenderEmail());
+        existing.setReceiverEmails(request.getReceiverEmails());
+        existing.setEnabled(request.isEnabled());
+        existing.setOneTime(request.isOneTime());
+        existing.setSendTime(request.getSendTime());
+        existing.setNextRunTime(request.getStartDate());
+        existing.setUpdatedAt(LocalDateTime.now());
 
-        EmailJob saved = emailJobRepository.save(job);
+        if (request.getEmailTemplateId() != null) {
+            EmailTemplate template = emailTemplateRepository.findById(request.getEmailTemplateId())
+                    .orElseThrow(() -> new RuntimeException("Template not found"));
+            existing.setEmailTemplate(template);
+        }
+
+        EmailJob saved = emailJobRepository.save(existing);
         return Optional.of(emailJobMapper.toDto(saved));
     }
 

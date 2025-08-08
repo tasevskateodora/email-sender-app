@@ -1,0 +1,168 @@
+<div class="user-modal-container">
+  <!-- Modal Header -->
+  <div class="modal-header" mat-dialog-title>
+    <div class="header-content">
+      <mat-icon class="header-icon">{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
+      <h2>{{ getModalTitle() }}</h2>
+    </div>
+    <button mat-icon-button mat-dialog-close class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Modal Content -->
+  <div mat-dialog-content class="modal-content">
+    <form [formGroup]="userForm" class="user-form">
+
+      <!-- Basic Information Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>person</mat-icon>
+          User Information
+        </h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Username</mat-label>
+            <input matInput
+                   formControlName="username"
+                   placeholder="Enter username"
+                   [readonly]="isEditMode">
+            <mat-icon matSuffix>account_circle</mat-icon>
+            <mat-hint *ngIf="!isEditMode">Username cannot be changed after creation</mat-hint>
+            <mat-hint *ngIf="isEditMode">Username cannot be modified</mat-hint>
+            <mat-error>{{ getErrorMessage('username') }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Security Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>security</mat-icon>
+          Security Settings
+        </h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ isEditMode ? 'New Password (optional)' : 'Password' }}</mat-label>
+            <input matInput
+                   [type]="hidePassword ? 'password' : 'text'"
+                   formControlName="password"
+                   [placeholder]="isEditMode ? 'Leave blank to keep current password' : 'Enter password'">
+            <button mat-icon-button
+                    matSuffix
+                    type="button"
+                    (click)="togglePasswordVisibility()"
+                    [attr.aria-label]="'Hide password'"
+                    [attr.aria-pressed]="hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-hint>{{ isPasswordRequired() ? 'Minimum 6 characters' : 'Minimum 6 characters (optional)' }}</mat-hint>
+            <mat-error>{{ getErrorMessage('password') }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row" *ngIf="shouldShowPasswordField()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput
+                   type="password"
+                   formControlName="confirmPassword"
+                   placeholder="Re-enter password">
+            <mat-icon matSuffix>lock</mat-icon>
+            <mat-error>{{ getErrorMessage('confirmPassword') }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Roles & Permissions Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>admin_panel_settings</mat-icon>
+          Roles & Permissions
+        </h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>User Roles</mat-label>
+            <mat-select formControlName="roleNames" multiple>
+              <mat-option *ngFor="let role of availableRoles" [value]="role">
+                <div class="role-option">
+                  <mat-icon class="role-icon">
+                    {{ role === 'ROLE_ADMIN' ? 'admin_panel_settings' : 'person' }}
+                  </mat-icon>
+                  {{ getRoleDisplayName(role) }}
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>group</mat-icon>
+            <mat-hint>Select one or more roles for this user</mat-hint>
+            <mat-error>{{ getErrorMessage('roleNames') }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Selected Roles Display -->
+        <div class="selected-roles" *ngIf="userForm.get('roleNames')?.value?.length">
+          <span class="roles-label">Selected roles:</span>
+          <mat-chip-listbox class="roles-chips">
+            <mat-chip-option
+              *ngFor="let role of userForm.get('roleNames')?.value"
+              [color]="role === 'ROLE_ADMIN' ? 'warn' : 'primary'"
+              selected>
+              <mat-icon matChipAvatar>
+                {{ role === 'ROLE_ADMIN' ? 'admin_panel_settings' : 'person' }}
+              </mat-icon>
+              {{ getRoleDisplayName(role) }}
+            </mat-chip-option>
+          </mat-chip-listbox>
+        </div>
+      </div>
+
+      <!-- Account Status Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>account_box</mat-icon>
+          Account Status
+        </h3>
+
+        <div class="form-row settings-row">
+          <div class="checkbox-group">
+            <mat-checkbox formControlName="enabled" class="checkbox-item">
+              <div class="checkbox-content">
+                <span class="checkbox-label">Enable User Account</span>
+                <small class="checkbox-hint">
+                  {{ userForm.get('enabled')?.value ?
+                  'User can log in and access the system' :
+                  'User account is disabled and cannot log in' }}
+                </small>
+              </div>
+            </mat-checkbox>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal Actions -->
+  <div mat-dialog-actions class="modal-actions">
+    <div class="action-buttons">
+      <button mat-button
+              (click)="onCancel()"
+              [disabled]="loading"
+              class="cancel-button">
+        Cancel
+      </button>
+
+      <button mat-raised-button
+              color="primary"
+              (click)="onSubmit()"
+              [disabled]="loading || userForm.invalid"
+              class="submit-button">
+        <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+        <mat-icon *ngIf="!loading">{{ isEditMode ? 'save' : 'person_add' }}</mat-icon>
+        {{ loading ? 'Saving...' : (isEditMode ? 'Update User' : 'Create User') }}
+      </button>
+    </div>
+  </div>
+</div>

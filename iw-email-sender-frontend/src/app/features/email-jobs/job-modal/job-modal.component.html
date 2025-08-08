@@ -1,0 +1,186 @@
+<div class="job-modal-container">
+  <!-- Modal Header -->
+  <div class="modal-header" mat-dialog-title>
+    <div class="header-content">
+      <mat-icon class="header-icon">{{ isEditMode ? 'edit' : 'add_circle' }}</mat-icon>
+      <h2>{{ getModalTitle() }}</h2>
+    </div>
+    <button mat-icon-button mat-dialog-close class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Modal Content -->
+  <div mat-dialog-content class="modal-content">
+    <form [formGroup]="jobForm" class="job-form">
+
+      <!-- Email Configuration Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>email</mat-icon>
+          Email Configuration
+        </h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Sender Email</mat-label>
+            <input matInput
+                   type="email"
+                   formControlName="senderEmail"
+                   placeholder="sender@example.com">
+            <mat-icon matSuffix>send</mat-icon>
+            <mat-error>{{ getErrorMessage('senderEmail') }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Receiver Emails</mat-label>
+            <textarea matInput
+                      formControlName="receiverEmails"
+                      placeholder="recipient1@example.com, recipient2@example.com"
+                      rows="3">
+            </textarea>
+            <mat-icon matSuffix>inbox</mat-icon>
+            <mat-hint>Separate multiple emails with commas</mat-hint>
+            <mat-error>{{ getErrorMessage('receiverEmails') }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Template</mat-label>
+            <mat-select formControlName="emailTemplateId"
+                        [disabled]="loadingTemplates">
+              <mat-option value="">
+                <em>No template (manual content)</em>
+              </mat-option>
+              <mat-option *ngFor="let template of templates" [value]="template.id">
+                {{ template.name }} - {{ template.subject }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>template_library</mat-icon>
+            <mat-progress-spinner *ngIf="loadingTemplates"
+                                  diameter="20"
+                                  mode="indeterminate">
+            </mat-progress-spinner>
+            <mat-hint>Select a template or leave blank for custom content</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Schedule Configuration Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>schedule</mat-icon>
+          Schedule Configuration
+        </h3>
+
+        <div class="form-row two-columns">
+          <mat-form-field appearance="outline">
+            <mat-label>Start Date</mat-label>
+            <input matInput
+                   [matDatepicker]="startPicker"
+                   formControlName="startDate">
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+            <mat-error>{{ getErrorMessage('startDate') }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Send Time</mat-label>
+            <input matInput
+                   type="time"
+                   formControlName="sendTime">
+            <mat-icon matSuffix>access_time</mat-icon>
+            <mat-error>{{ getErrorMessage('sendTime') }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>End Date (Optional)</mat-label>
+            <input matInput
+                   [matDatepicker]="endPicker"
+                   formControlName="endDate">
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+            <mat-hint>Leave blank for no end date</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Recurrence Pattern</mat-label>
+            <mat-select formControlName="recurrencePattern">
+              <mat-option *ngFor="let pattern of recurrencePatterns" [value]="pattern">
+                <div class="recurrence-option">
+                  <mat-icon class="pattern-icon">
+                    {{
+                      pattern === 'DAILY' ? 'today' :
+                        pattern === 'WEEKLY' ? 'date_range' :
+                          pattern === 'MONTHLY' ? 'calendar_month' :
+                            pattern === 'YEARLY' ? 'calendar_view_year' :
+                              pattern === 'ONE_TIME' ? 'today' :
+                                'play_arrow'
+                    }}
+                  </mat-icon>
+                  {{ formatRecurrencePattern(pattern) }}
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>repeat</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Job Settings Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>settings</mat-icon>
+          Job Settings
+        </h3>
+
+        <div class="form-row settings-row">
+          <div class="checkbox-group">
+            <mat-checkbox formControlName="oneTime" class="checkbox-item">
+              <div class="checkbox-content">
+                <span class="checkbox-label">One-time execution</span>
+                <small class="checkbox-hint">Execute only once instead of recurring</small>
+              </div>
+            </mat-checkbox>
+
+            <mat-checkbox formControlName="enabled" class="checkbox-item">
+              <div class="checkbox-content">
+                <span class="checkbox-label">Enable job immediately</span>
+                <small class="checkbox-hint">Start the job as soon as it's created</small>
+              </div>
+            </mat-checkbox>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal Actions -->
+  <div mat-dialog-actions class="modal-actions">
+    <div class="action-buttons">
+      <button mat-button
+              (click)="onCancel()"
+              [disabled]="loading"
+              class="cancel-button">
+        Cancel
+      </button>
+
+      <button mat-raised-button
+              color="primary"
+              (click)="onSubmit()"
+              [disabled]="loading || jobForm.invalid"
+              class="submit-button">
+        <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+        <mat-icon *ngIf="!loading">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+        {{ loading ? 'Saving...' : (isEditMode ? 'Update Job' : 'Create Job') }}
+      </button>
+    </div>
+  </div>
+</div>

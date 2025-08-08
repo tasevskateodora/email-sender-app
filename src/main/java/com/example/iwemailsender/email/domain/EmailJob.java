@@ -39,7 +39,7 @@ public class EmailJob extends BaseEntity{
     private List<EmailExecution> executions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "email_template_id")
+    @JoinColumn(name = "email_template_id", nullable = false)
    // @JsonIgnore
     private EmailTemplate emailTemplate;
 

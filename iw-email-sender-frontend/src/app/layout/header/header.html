@@ -1,6 +1,6 @@
 <mat-toolbar color="primary" class="app-header" *ngIf="isLoggedIn()">
   <!-- Logo and Title -->
-  <div class="header-brand" (click)="navigateTo('/dashboard')">
+  <div class="header-brand" (click)="navigateTo('/dashboard')" style="cursor: pointer;">
     <mat-icon class="brand-icon">email</mat-icon>
     <span class="brand-title">IW Email Sender</span>
   </div>
@@ -10,9 +10,8 @@
     <button
       mat-button
       class="nav-button"
-      (click)="navigateTo('/dashboard')"
-      routerLinkActive="active"
-      routerLink="/dashboard">
+      routerLink="/dashboard"
+      routerLinkActive="active">
       <mat-icon>dashboard</mat-icon>
       Dashboard
     </button>
@@ -20,18 +19,44 @@
     <button
       mat-button
       class="nav-button"
-      (click)="navigateTo('/email-jobs')"
-      routerLinkActive="active"
-      routerLink="/email-jobs">
+      routerLink="/email-jobs"
+      routerLinkActive="active">
       <mat-icon>email</mat-icon>
       Email Jobs
     </button>
+
+    <button
+      mat-button
+      class="nav-button"
+      routerLink="/templates"
+      routerLinkActive="active">
+      <mat-icon>template_library</mat-icon>
+      Templates
+    </button>
+
+    <!-- Admin Menu -->
+    <button
+      mat-button
+      [matMenuTriggerFor]="adminMenu"
+      class="nav-button admin-button"
+      *ngIf="isAdmin()">
+      <mat-icon>admin_panel_settings</mat-icon>
+      Admin
+     <!-- <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>-->
+    </button>
+
+    <mat-menu #adminMenu="matMenu">
+      <button mat-menu-item routerLink="/admin/users">
+        <mat-icon>people</mat-icon>
+        <span>User Management</span>
+      </button>
+    </mat-menu>
   </nav>
 
   <!-- Spacer -->
   <span class="header-spacer"></span>
 
-  <!-- User Menu -->
+
   <div class="user-menu" *ngIf="currentUser">
     <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
       <mat-icon>account_circle</mat-icon>
@@ -44,7 +69,7 @@
       <div class="user-info">
         <div class="user-details">
           <strong>{{ currentUser?.username }}</strong>
-          <small>{{ currentUser?.email }}</small>
+          <small>{{ currentUser?.email || 'No email set' }}</small>
           <div class="user-roles">
             <mat-chip
               *ngFor="let role of currentUser.roles"
@@ -58,21 +83,26 @@
 
       <mat-divider></mat-divider>
 
-      <button mat-menu-item (click)="navigateTo('/dashboard')">
+      <button mat-menu-item routerLink="/dashboard">
         <mat-icon>dashboard</mat-icon>
         <span>Dashboard</span>
       </button>
 
-      <button mat-menu-item (click)="navigateTo('/email-jobs')">
+      <button mat-menu-item routerLink="/email-jobs">
         <mat-icon>email</mat-icon>
         <span>My Email Jobs</span>
       </button>
 
+      <button mat-menu-item routerLink="/templates">
+        <mat-icon>template_library</mat-icon>
+        <span>Email Templates</span>
+      </button>
+
       <div *ngIf="isAdmin()">
         <mat-divider></mat-divider>
-        <button mat-menu-item disabled>
+        <button mat-menu-item routerLink="/admin/users">
           <mat-icon>admin_panel_settings</mat-icon>
-          <span>Admin Panel (Coming Soon)</span>
+          <span>User Management</span>
         </button>
       </div>
 

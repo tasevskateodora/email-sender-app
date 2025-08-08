@@ -11,9 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,19 +75,63 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toDto);
     }
 
+
     @Override
     public Optional<UserDto> update(UUID id, UserDto userRequest) {
+
         if (!userRepository.existsById(id)) {
-            //return Optional.empty();
-            throw new RuntimeException("User with" + id + "not found");
+            throw new RuntimeException("User with " + id + " not found");
         }
+
+        User existingUser = userRepository.findById(id).get();
         User user = userMapper.toEntity(userRequest);
-        if (user.getPassword() != null) {
+        user.setId(id);
+
+        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+        } else {
+            user.setPassword(existingUser.getPassword());
         }
+        List<Role> finalRoles = new ArrayList<>();
+
+        if (userRequest.getRoleNames() != null && !userRequest.getRoleNames().isEmpty()) {
+
+            for (String roleName : userRequest.getRoleNames()) {
+                Role existingRole = roleRepository.findByName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found in database: " + roleName));
+
+                finalRoles.add(existingRole);
+            }
+
+            user.setRoles(finalRoles);
+
+        } else {
+            if (existingUser.getRoles() != null && !existingUser.getRoles().isEmpty()) {
+                user.setRoles(new ArrayList<>(existingUser.getRoles()));
+            } else {
+                Role defaultRole = roleRepository.findByName("ROLE_USER")
+                        .orElseThrow(() -> new RuntimeException("Default role ROLE_USER not found in database"));
+
+                finalRoles.add(defaultRole);
+                user.setRoles(finalRoles);
+            }
+        }
+
+        user.setCreatedAt(existingUser.getCreatedAt());
+        user.setUpdatedAt(LocalDateTime.now());
+
+        if (user.getRoles() != null) {
+            user.getRoles().forEach(role -> {
+                if (role.getId() == null) {
+                }
+            });
+        }
+
         User updatedUser = userRepository.save(user);
         return Optional.of(userMapper.toDto(updatedUser));
     }
+
+
 
     @Override
     public String deleteById(UUID id) {

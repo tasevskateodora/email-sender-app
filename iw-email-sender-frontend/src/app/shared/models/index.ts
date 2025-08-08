@@ -14,6 +14,7 @@ export interface EmailJob {
   createdBy?: User;
   createdAt?: string;
   updatedAt?: string;
+  emailTemplateId?: string;
 }
 
 export enum RecurrencePattern {

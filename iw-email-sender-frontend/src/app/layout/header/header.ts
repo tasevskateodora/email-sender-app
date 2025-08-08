@@ -10,21 +10,23 @@ import {NgClass} from '@angular/common';
 import {MatChipsModule} from '@angular/material/chips';
 import {MatDividerModule} from '@angular/material/divider';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.html',
   styleUrls: ['./header.css'],
-  standalone:true,
+  standalone: true,
   imports: [
+    CommonModule,
+    RouterModule,
     MatToolbarModule,
     MatIconModule,
     MatMenuModule,
     MatButtonModule,
     NgClass,
     MatChipsModule,
-    MatDividerModule,
-    CommonModule
+    MatDividerModule
   ]
 })
 export class HeaderComponent implements OnInit {

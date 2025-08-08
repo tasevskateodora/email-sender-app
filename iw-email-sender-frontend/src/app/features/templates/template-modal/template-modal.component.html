@@ -1,0 +1,116 @@
+<div class="template-modal-container">
+  <!-- Modal Header -->
+  <div class="modal-header" mat-dialog-title>
+    <div class="header-content">
+      <mat-icon class="header-icon">{{ isEditMode ? 'edit' : 'add_circle' }}</mat-icon>
+      <h2>{{ getModalTitle() }}</h2>
+    </div>
+    <button mat-icon-button mat-dialog-close class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Modal Content -->
+  <div mat-dialog-content class="modal-content">
+    <mat-tab-group class="template-tabs">
+
+      <!-- Template Editor Tab -->
+      <mat-tab label="Template Editor">
+        <div class="tab-content">
+          <form [formGroup]="templateForm" class="template-form">
+
+            <!-- Basic Information -->
+            <div class="form-section">
+              <h3 class="section-title">
+                <mat-icon>info</mat-icon>
+                Basic Information
+              </h3>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Template Name</mat-label>
+                  <input matInput
+                         formControlName="name"
+                         placeholder="Enter template name"
+                         maxlength="100">
+                  <mat-icon matSuffix>label</mat-icon>
+                  <mat-hint>{{ getCharacterCount('name') }}/{{ getMaxLength('name') }} characters</mat-hint>
+                  <mat-error>{{ getErrorMessage('name') }}</mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Email Subject</mat-label>
+                  <input matInput
+                         formControlName="subject"
+                         placeholder="Enter email subject line"
+                         maxlength="200">
+                  <mat-icon matSuffix>subject</mat-icon>
+                  <mat-hint>{{ getCharacterCount('subject') }}/{{ getMaxLength('subject') }} characters</mat-hint>
+                  <mat-error>{{ getErrorMessage('subject') }}</mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Email Content -->
+            <div class="form-section">
+              <div class="section-header">
+                <h3 class="section-title">
+                  <mat-icon>description</mat-icon>
+                  Email Content
+                </h3>
+                <div class="section-actions">
+                  <button mat-button
+                          type="button"
+                          (click)="previewTemplate()"
+                          [disabled]="!templateForm.get('subject')?.value || !templateForm.get('body')?.value">
+                    <mat-icon>visibility</mat-icon>
+                    Preview
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Email Body</mat-label>
+                  <textarea matInput
+                            formControlName="body"
+                            placeholder="Enter your email content here..."
+                            rows="12"
+                            class="email-body-textarea">
+                  </textarea>
+                  <mat-hint>{{ getCharacterCount('body') }} characters - HTML and plain text supported</mat-hint>
+                  <mat-error>{{ getErrorMessage('body') }}</mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </div>
+
+  <!-- Modal Actions -->
+  <div mat-dialog-actions class="modal-actions">
+    <div class="action-buttons">
+      <button mat-button
+              (click)="onCancel()"
+              [disabled]="loading"
+              class="cancel-button">
+        Cancel
+      </button>
+
+      <button mat-raised-button
+              color="primary"
+              (click)="onSubmit()"
+              [disabled]="loading || templateForm.invalid"
+              class="submit-button">
+        <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+        <mat-icon *ngIf="!loading">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+        {{ loading ? 'Saving...' : (isEditMode ? 'Update Template' : 'Create Template') }}
+      </button>
+    </div>
+  </div>
+</div>

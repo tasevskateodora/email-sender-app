@@ -1,0 +1,159 @@
+<div class="user-management-container" *ngIf="isAdmin()">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>admin_panel_settings</mat-icon>
+      User Management
+    </h1>
+    <div class="page-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="createNewUser()">
+        <mat-icon>person_add</mat-icon>
+        Create New User
+      </button>
+      <button
+        mat-icon-button
+        (click)="loadUsers()"
+        matTooltip="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading users...</p>
+  </div>
+
+  <!-- Users Table -->
+  <mat-card class="table-card" *ngIf="!loading">
+    <mat-card-content>
+      <div class="table-container" *ngIf="users.length > 0; else noDataTemplate">
+        <table mat-table [dataSource]="users" class="users-table">
+
+          <!-- Username Column -->
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef>Username</th>
+            <td mat-cell *matCellDef="let user">
+              <div class="username-cell">
+                <mat-icon class="user-icon">
+                  {{ user.roleNames?.includes('ROLE_ADMIN') ? 'admin_panel_settings' : 'person' }}
+                </mat-icon>
+                <div class="username-content">
+                  <span class="username">{{ user.username }}</span>
+                  <small class="current-user-badge" *ngIf="isCurrentUser(user)">
+                    (You)
+                  </small>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Roles Column -->
+          <ng-container matColumnDef="roles">
+            <th mat-header-cell *matHeaderCellDef>Roles</th>
+            <td mat-cell *matCellDef="let user">
+              <div class="roles-cell">
+                <mat-chip
+                  *ngFor="let role of user.roleNames"
+                  [color]="getRoleColor(role)"
+                  class="role-chip">
+                  {{ getRoleDisplayName(role) }}
+                </mat-chip>
+                <span class="no-roles" *ngIf="!user.roleNames?.length">
+                  No roles assigned
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="enabled">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-slide-toggle
+                [checked]="user.enabled"
+                (change)="toggleUserStatus(user)"
+                [disabled]="isCurrentUser(user) && user.enabled"
+                [color]="'primary'">
+                <span class="status-text" [ngClass]="user.enabled ? 'status-enabled' : 'status-disabled'">
+                  {{ user.enabled ? 'Active' : 'Inactive' }}
+                </span>
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <!-- Created Date Column -->
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef>Created</th>
+            <td mat-cell *matCellDef="let user">
+              <div class="date-cell">
+                <mat-icon class="date-icon">calendar_today</mat-icon>
+                <span>{{ formatDateTime(user.createdAt) }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let user">
+              <div class="action-buttons">
+                <button
+                  mat-icon-button
+                  (click)="editUser(user)"
+                  matTooltip="Edit User"
+                  color="primary">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="deleteUser(user)"
+                  matTooltip="Delete User"
+                  color="warn"
+                  [disabled]="isCurrentUser(user)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="user-row"></tr>
+        </table>
+      </div>
+
+      <!-- No Data Template -->
+      <ng-template #noDataTemplate>
+        <div class="no-data-container">
+          <mat-icon class="no-data-icon">admin_panel_settings</mat-icon>
+          <h3>No Users Found</h3>
+          <p>Create your first user account to get started with user management.</p>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="createNewUser()">
+            <mat-icon>person_add</mat-icon>
+            Create Your First User
+          </button>
+        </div>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- Access Denied -->
+<div class="access-denied" *ngIf="!isAdmin()">
+  <mat-card class="access-denied-card">
+    <mat-card-content>
+      <div class="access-denied-content">
+        <mat-icon class="access-denied-icon">lock</mat-icon>
+        <h2>Access Denied</h2>
+        <p>You need administrator privileges to access user management.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

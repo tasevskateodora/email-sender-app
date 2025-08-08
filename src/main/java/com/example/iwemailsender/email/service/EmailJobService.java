@@ -1,7 +1,9 @@
 package com.example.iwemailsender.email.service;
 
+import com.example.iwemailsender.email.domain.EmailJob;
 import com.example.iwemailsender.email.dto.EmailJobDto;
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;

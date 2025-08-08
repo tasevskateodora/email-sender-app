@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
-import { EmailJobService } from '../../../core/services/api';
 import { AuthService } from '../../../core/services/auth';
 import { EmailJob } from '../../../shared/models';
+import { JobModalComponent } from '../job-modal/job-modal.component';
+import { EmailJobService } from '../../../core/services/email-job.service';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
@@ -15,12 +16,14 @@ import {NgClass, SlicePipe} from '@angular/common';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import { CommonModule } from '@angular/common';
 
+
 @Component({
   selector: 'app-email-job-list',
   templateUrl: './email-job-list.html',
   styleUrls: ['./email-job-list.css'],
   standalone: true,
   imports: [
+    // Импорти на Angular Material модули и други потребни модули
     MatIconModule,
     MatButtonModule,
     MatCardModule,
@@ -39,6 +42,7 @@ import { CommonModule } from '@angular/common';
 export class EmailJobListComponent implements OnInit {
   emailJobs: EmailJob[] = [];
   loading = false;
+
   displayedColumns: string[] = [
     'senderEmail',
     'receiverEmails',
@@ -65,13 +69,13 @@ export class EmailJobListComponent implements OnInit {
 
     if (!currentUser) {
       this.loading = false;
+      this.showError('User not authenticated.');
       return;
     }
 
-    // If admin, load all jobs. If user, load only their jobs
     const loadObservable = this.authService.isAdmin()
-      ? this.emailJobService.getAllEmailJobs()
-      : this.emailJobService.getEmailJobsByUser(currentUser.id!);
+      ? this.emailJobService.getAll()
+      : this.emailJobService.getByUserId(currentUser.id!);
 
     loadObservable.subscribe({
       next: (jobs) => {
@@ -90,8 +94,11 @@ export class EmailJobListComponent implements OnInit {
     if (!job.id) return;
 
     const newStatus = !job.enabled;
+    const operation = newStatus
+      ? this.emailJobService.enableJob(job.id)
+      : this.emailJobService.disableJob(job.id);
 
-    this.emailJobService.toggleJobStatus(job.id, newStatus).subscribe({
+    operation.subscribe({
       next: (response) => {
         job.enabled = response.enabled;
         this.showSuccess(response.message);
@@ -107,7 +114,7 @@ export class EmailJobListComponent implements OnInit {
     if (!job.id) return;
 
     if (confirm(`Are you sure you want to delete the email job for ${job.receiverEmails}?`)) {
-      this.emailJobService.deleteEmailJob(job.id).subscribe({
+      this.emailJobService.delete(job.id).subscribe({
         next: () => {
           this.emailJobs = this.emailJobs.filter(j => j.id !== job.id);
           this.showSuccess('Email job deleted successfully');
@@ -129,22 +136,49 @@ export class EmailJobListComponent implements OnInit {
   }
 
   createNewJob(): void {
-    // TODO: Open create job dialog
-    this.showInfo('Create job functionality coming soon!');
+    const dialogRef = this.dialog.open(JobModalComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      disableClose: true,
+      data: { mode: 'create' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadEmailJobs(); // Refresh the list
+        this.showSuccess('Email job created successfully!');
+      }
+    });
   }
 
   editJob(job: EmailJob): void {
-    // TODO: Open edit job dialog
-    this.showInfo('Edit job functionality coming soon!');
+    const dialogRef = this.dialog.open(JobModalComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      disableClose: true,
+      data: {
+        mode: 'edit',
+        job: job
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadEmailJobs();
+        this.showSuccess('Email job updated successfully!');
+      }
+    });
   }
 
-  formatDateTime(dateTime: string | undefined): string {
+  formatDateTime(dateTime?: string): string {
     if (!dateTime) return 'N/A';
     return new Date(dateTime).toLocaleString();
   }
 
   formatRecurrence(pattern: string): string {
-    return pattern.toLowerCase().charAt(0).toUpperCase() + pattern.toLowerCase().slice(1);
+    return pattern.charAt(0).toUpperCase() + pattern.slice(1).toLowerCase();
   }
 
   private showSuccess(message: string): void {
@@ -160,11 +194,5 @@ export class EmailJobListComponent implements OnInit {
       panelClass: ['error-snackbar']
     });
   }
-
-  private showInfo(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      panelClass: ['info-snackbar']
-    });
-  }
 }
+

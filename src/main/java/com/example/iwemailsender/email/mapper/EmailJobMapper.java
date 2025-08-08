@@ -28,7 +28,7 @@ public interface EmailJobMapper {
     @Mapping(target = "createdByUserId", source = "createdBy.id")
     @Mapping(target = "emailTemplateName", source = "emailTemplate.name")
     @Mapping(target = "emailTemplateId", source = "emailTemplate.id")
-    @Mapping(source = "emailTemplate", target = "emailTemplate")
+   //@Mapping(source = "emailTemplate", target = "emailTemplate")
     EmailJobDto toDto(EmailJob job);
 
     List<EmailJobDto> toDtoList(List<EmailJob> jobs);

@@ -2,7 +2,9 @@ package com.example.iwemailsender.email.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -17,7 +19,11 @@ public class BaseEntity {
     @Id
     private UUID id;
 
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     LocalDateTime createdAt;
+
+    @UpdateTimestamp
     LocalDateTime updatedAt;
 
     public BaseEntity() {

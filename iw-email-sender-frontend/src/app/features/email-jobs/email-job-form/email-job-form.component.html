@@ -1,0 +1,75 @@
+<div class="email-job-form-container" *ngIf="!loading; else loadingTpl">
+  <h2>{{ jobId ? 'Edit Email Job' : 'Create Email Job' }}</h2>
+
+  <form [formGroup]="emailJobForm" (ngSubmit)="onSubmit()">
+
+    <label for="startDate">Start Date & Time:</label>
+    <input type="datetime-local" id="startDate" formControlName="startDate" />
+    <div *ngIf="emailJobForm.get('startDate')?.touched && emailJobForm.get('startDate')?.invalid" class="error">
+      Start date is required.
+    </div>
+
+    <label for="endDate">End Date & Time:</label>
+    <input type="datetime-local" id="endDate" formControlName="endDate" />
+
+    <label for="recurrencePattern">Recurrence Pattern:</label>
+    <select id="recurrencePattern" formControlName="recurrencePattern">
+      <option value="NONE">None</option>
+      <option value="DAILY">Daily</option>
+      <option value="WEEKLY">Weekly</option>
+      <option value="MONTHLY">Monthly</option>
+      <option value="ONE_TIME">One time</option>
+    </select>
+
+    <label for="sendTime">Send Time (HH:mm):</label>
+    <input type="time" id="sendTime" formControlName="sendTime" />
+    <div *ngIf="emailJobForm.get('sendTime')?.touched && emailJobForm.get('sendTime')?.invalid" class="error">
+      Send time is required.
+    </div>
+
+    <label for="senderEmail">Sender Email:</label>
+    <input type="email" id="senderEmail" formControlName="senderEmail" />
+    <div *ngIf="emailJobForm.get('senderEmail')?.touched && emailJobForm.get('senderEmail')?.invalid" class="error">
+      Valid sender email is required.
+    </div>
+
+    <label for="receiverEmails">Receiver Emails (comma separated):</label>
+    <input type="text" id="receiverEmails" formControlName="receiverEmails" />
+    <div *ngIf="emailJobForm.get('receiverEmails')?.touched && emailJobForm.get('receiverEmails')?.invalid" class="error">
+      Receiver emails are required.
+    </div>
+
+    <label for="emailTemplateId">Email Template:</label>
+    <select id="emailTemplateId" formControlName="emailTemplateId">
+      <option value="">-- Select Template --</option>
+      <option *ngFor="let t of templates" [value]="t.id">{{ t.name }}</option>
+    </select>
+    <div *ngIf="emailJobForm.get('emailTemplateId')?.touched && emailJobForm.get('emailTemplateId')?.invalid" class="error">
+      Email template is required.
+    </div>
+
+    <label>
+      <input type="checkbox" formControlName="enabled" />
+      Enabled
+    </label>
+
+    <label>
+      <input type="checkbox" formControlName="isOneTime" />
+      One-time Job
+    </label>
+
+    <div class="form-buttons">
+      <button type="submit" [disabled]="loading">{{ jobId ? 'Update' : 'Create' }}</button>
+      <button type="button" (click)="cancel()" [disabled]="loading">Cancel</button>
+    </div>
+
+  </form>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <p>Loading...</p>
+</ng-template>

@@ -1,15 +1,30 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideNativeDateAdapter } from '@angular/material/core';
+
 import { App } from './app/app';
+import { routes } from './app/app.routes';
 
-bootstrapApplication(App, appConfig)
-  .catch((err) => console.error(err));
+import { AuthInterceptor } from './app/core/interceptors/jwt.interceptor';
 
-/*import { bootstrapApplication } from '@angular/platform-browser';
-import { App } from './app/app';
+console.log('Starting Angular with AuthInterceptor');
+bootstrapApplication(App, {
+  providers: [
+    provideRouter(routes),
 
-bootstrapApplication(App)
-  .catch(err => console.error(err));*/
+    provideHttpClient(withInterceptors([AuthInterceptor])),
+
+    provideAnimations(),
+    provideNativeDateAdapter(),
+
+  ]
+}).then(() => {
+  console.log('Angular started with interceptors configured');
+}).catch(err => {
+  console.error('Angular bootstrap error:', err);
+});
 
 
 

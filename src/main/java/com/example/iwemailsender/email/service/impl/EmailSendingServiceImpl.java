@@ -24,6 +24,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class EmailSendingServiceImpl implements EmailSendingService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailSendingServiceImpl.class);
+
+
 
     private final JavaMailSender mailSender;
     private final ObjectMapper objectMapper;
@@ -156,76 +159,131 @@ public class EmailSendingServiceImpl implements EmailSendingService {
         }
     }
 
-
     @Retryable(
             value = {Exception.class},
             maxAttemptsExpression = "#{@emailSchedulerConfig.maxAttempts}",
             backoff = @Backoff(delayExpression = "#{@emailSchedulerConfig.delaySeconds}")
     )
     public void sendEmailWithTemplate(UUID jobId, String from, String recipients, EmailTemplate template) throws Exception {
+
+
+        logger.info("Validating email job {}", jobId);
+
         if (template == null) {
-            throw new IllegalArgumentException("EmailTemplate cannot be null");
+            logger.error("EmailTemplate is null for job {}", jobId);
+            throw new IllegalArgumentException("EmailTemplate cannot be null - job configuration error");
         }
 
         if (template.getSubject() == null || template.getBody() == null) {
+            logger.error("EmailTemplate incomplete for job {}: subject={}, body={}",
+                    jobId, template.getSubject(), template.getBody());
             throw new IllegalArgumentException("EmailTemplate must have both subject and body");
         }
 
-        logger.info("Sending email with template '{}' for job {}", template.getName(), jobId);
+        if (recipients == null || recipients.trim().isEmpty()) {
+            logger.error("No recipients specified for job {}", jobId);
+            throw new IllegalArgumentException("Recipients cannot be empty");
+        }
+
+        if (from == null || from.trim().isEmpty()) {
+            logger.error("No sender email specified for job {}", jobId);
+            throw new IllegalArgumentException("Sender email cannot be empty");
+        }
+
+        logger.info("Validation passed, sending email with template '{}' for job {}", template.getName(), jobId);
 
         try {
             List<String> recipientList = parseRecipients(recipients);
             EmailDto dto = new EmailDto(from, recipientList, template.getSubject(), template.getBody());
             sendEmail(dto);
+
+            logger.info("Email sent successfully for job {}", jobId);
+
         } catch (Exception e) {
-            logger.warn("Email sending failed for job {}: {}", jobId, e.getMessage());
+            logger.warn("Email sending failed for job {} (attempt will retry): {}", jobId, e.getMessage());
             throw e;
         }
     }
 
     @Recover
     public void recoverSendEmailWithTemplate(Exception e, UUID jobId, String from, String recipients, EmailTemplate template) {
-        logger.error("All retry attempts failed for sending email for job {}: {}", jobId, e.getMessage());
+        logger.error("All retry attempts failed for job {}: {}", jobId, e.getMessage());
 
-        try {
-            LogExecutionDto dto = new LogExecutionDto();
-            dto.setJobId(jobId);
-            dto.setStatus(EmailStatus.FAIL);
-            dto.setErrorMessage(e.getMessage());
-            dto.setRetryAttempt(emailConfig.getMaxAttempts());
-            emailExecutionService.logExecution(dto);
+        String failureType;
+        String actionRequired;
 
-        } catch (Exception logEx) {
-            logger.error("Failed to log execution failure for job {}: {}", jobId, logEx.getMessage());
+        if (e instanceof IllegalArgumentException) {
+            failureType = "CONFIGURATION ERROR";
+            actionRequired = "Fix job configuration:\n" +
+                    "- Verify email template is assigned\n" +
+                    "- Check template has subject and body\n" +
+                    "- Verify sender/receiver emails";
+        } else {
+            failureType = "SMTP/TECHNICAL ERROR";
+            actionRequired = "Fix technical issue:\n" +
+                    "- Check SMTP server connectivity\n" +
+                    "- Verify email credentials\n" +
+                    "- Check network connectivity\n" +
+                    "- Review SMTP server logs";
         }
 
         try {
-            String subject = "[ALERT] Failed Email Job Notification";
+            String subject = String.format("[%s] Email Job Failed After %d Attempts - ID: %s",
+                    failureType, emailConfig.getMaxAttempts(), jobId);
+
+            String templateInfo = template != null ?
+                    String.format("%s (%s)", template.getName(), template.getSubject()) :
+                    "Template was NULL";
+
             String body = String.format(
-                    "The system failed to send an email after multiple retry attempts.\n\n" +
-                            "From: %s\nTo: %s\nTemplate Name: %s\nSubject: %s\n\n" +
-                            "Error: %s\n\n",
+                    "EMAIL JOB FAILURE ALERT\n\n" +
+                            "----------------------------------\n" +
+                            "FAILURE TYPE: %s\n" +
+                            "----------------------------------\n\n" +
+                            "Job ID: %s\n" +
+                            "From: %s\n" +
+                            "To: %s\n" +
+                            "Template: %s\n\n" +
+                            "Error: %s\n\n" +
+                            "Attempts Made: %d\n" +
+                            "Retry Delay: %d seconds\n\n" +
+                            "-----------------------------------\n" +
+                            "ACTION REQUIRED:\n" +
+                            "------------------------------------\n" +
+                            "%s\n\n" +
+                            "System: Email Scheduler\n" +
+                            "Timestamp: %s\n",
+                    failureType,
+                    jobId,
                     from,
                     recipients,
-                    template != null ? template.getName() : "N/A",
-                    template != null ? template.getSubject() : "N/A",
-                    e.getMessage()
+                    templateInfo,
+                    e.getMessage(),
+                    emailConfig.getMaxAttempts(),
+                    emailConfig.getDelaySeconds(),
+                    actionRequired,
+                    LocalDateTime.now()
             );
 
             mailSender.send(mimeMessage -> {
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-                helper.setFrom("system@company.com");
+                helper.setFrom("teodoratasevska13@gmail.com");
                 helper.setTo(emailConfig.getNotificationEmail());
                 helper.setSubject(subject);
                 helper.setText(body, false);
             });
 
-            logger.info("Admin alert email sent after retry failure.");
-        } catch (Exception ex) {
-            logger.error("Failed to send admin notification after retries failed: {}", ex.getMessage());
-        }
+            logger.info("Admin alert sent for failed job {}", jobId);
 
-        throw new RuntimeException("Retry failed: " + e.getMessage(), e);
+        } catch (Exception ex) {
+            logger.error("CRITICAL: Failed to send admin notification for job {}: {}", jobId, ex.getMessage());
+            System.err.println("CRITICAL: Admin alert failed!");
+            System.err.println("Job ID: " + jobId);
+            System.err.println("Failure: " + failureType + " - " + e.getMessage());
+            System.err.println("Alert error: " + ex.getMessage());
+        }
+        throw new RuntimeException("Email job failed after " + emailConfig.getMaxAttempts() +
+                " retry attempts: " + e.getMessage(), e);
     }
 
 

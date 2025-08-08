@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
@@ -117,7 +118,6 @@ export class AuthService {
       return null;
     }
   }
-
   private isTokenExpired(token: string): boolean {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -127,6 +127,14 @@ export class AuthService {
       return true;
     }
   }
-}
 
+  getUserIdFromToken(): string | null {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.userId || null;
+  }
+
+}
 

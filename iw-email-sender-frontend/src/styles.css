@@ -1,4 +1,598 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+.modal-container {
+  min-width: 500px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.job-modal-container,
+.template-modal-container,
+.user-modal-container {
+  min-width: 500px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal Header Styles */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  color: white;
+  margin: -24px -24px 0 -24px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  font-size: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.close-button {
+  color: white !important;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Modal Content */
+.modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px !important;
+  margin: -24px;
+  margin-top: 0;
+}
+
+/* Form Sections */
+.form-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background: #fafafa;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.form-section:hover {
+  background: #f5f5f5;
+  border-color: #d0d0d0;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #1976d2;
+}
+
+.section-title mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Form Layout */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Settings & Checkboxes */
+.settings-row {
+  margin-bottom: 0;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.checkbox-item {
+  align-items: flex-start !important;
+}
+
+.checkbox-content {
+  display: flex;
+  flex-direction: column;
+  margin-left: 8px;
+}
+
+.checkbox-label {
+  font-weight: 500;
+  color: #333;
+}
+
+.checkbox-hint {
+  color: #666;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Special Input Styles */
+.email-body-textarea {
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+}
+
+/* Role Options */
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #666;
+}
+
+/* Selected Roles Display */
+.selected-roles {
+  margin-top: 16px;
+  padding: 12px;
+  background: #e3f2fd;
+  border-radius: 4px;
+}
+
+.roles-label {
+  font-weight: 500;
+  color: #1976d2;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.roles-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Recurrence Pattern Options */
+.recurrence-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pattern-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #666;
+}
+
+/* Variables Section */
+.variables-section {
+  padding: 0;
+}
+
+.variables-description {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.variables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.variable-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.variable-card:hover {
+  background: #f5f5f5;
+  border-color: #1976d2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.variable-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.variable-icon {
+  color: #1976d2;
+}
+
+.variable-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.variable-name {
+  font-family: 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.variable-description {
+  color: #666;
+  margin-top: 4px;
+}
+
+.variables-help {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #fff3e0;
+  border-radius: 4px;
+  border-left: 4px solid #ff9800;
+}
+
+.help-icon {
+  color: #ff9800;
+  flex-shrink: 0;
+}
+
+.help-content {
+  flex: 1;
+}
+
+.help-content strong {
+  color: #e65100;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.help-content ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 4px;
+  color: #666;
+}
+
+.help-content code {
+  background: #f5f5f5;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  padding: 16px 24px !important;
+  margin: 0 -24px -24px -24px;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancel-button {
+  min-width: 100px;
+}
+
+.submit-button {
+  min-width: 120px;
+  position: relative;
+}
+
+.button-spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.submit-button mat-icon {
+  margin-right: 8px;
+}
+
+/* Loading States */
+.submit-button[disabled] {
+  opacity: 0.7;
+}
+
+/* Tab Styles */
+.template-tabs {
+  height: calc(100% - 40px);
+}
+
+.tab-content {
+  padding: 20px 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Page Styles for List Components */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  color: white;
+  border-radius: 8px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.page-title mat-icon {
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.page-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Table Styles */
+.table-card {
+  margin-bottom: 24px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.mat-mdc-table {
+  width: 100%;
+}
+
+.mat-mdc-header-row {
+  background: #f5f5f5;
+}
+
+.mat-mdc-row:hover {
+  background: #fafafa;
+}
+
+/* Cell Styles */
+.email-cell,
+.username-cell,
+.template-name-cell,
+.date-cell,
+.subject-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email-icon,
+.user-icon,
+.template-icon,
+.date-icon {
+  color: #666;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* Status Styles */
+.status-enabled {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.status-disabled {
+  color: #f44336;
+  font-weight: 500;
+}
+
+/* No Data States */
+.no-data-container,
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.no-data-icon {
+  font-size: 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.no-data-container h3 {
+  color: #666;
+  margin: 16px 0 8px 0;
+}
+
+.no-data-container p {
+  color: #999;
+  margin-bottom: 24px;
+  max-width: 400px;
+}
+
+/* Access Denied */
+.access-denied {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.access-denied-card {
+  max-width: 400px;
+  text-align: center;
+}
+
+.access-denied-content {
+  padding: 40px 20px;
+}
+
+.access-denied-icon {
+  font-size: 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  color: #f44336;
+  margin-bottom: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .job-modal-container,
+  .template-modal-container,
+  .user-modal-container {
+    min-width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+  }
+
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-content {
+    padding: 16px !important;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .variables-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation */
+.job-modal-container,
+.template-modal-container,
+.user-modal-container {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Snackbar Styles */
+.success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.info-snackbar {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
