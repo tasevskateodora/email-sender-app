@@ -25,9 +25,8 @@ public class JwtUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
-    // Use a strong secret key (in production, load from environment variables)
     private static final String SECRET_KEY = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
-    private static final long JWT_EXPIRATION = 86400000; // 24 hours
+    private static final long JWT_EXPIRATION = 86400000;
 
     private final UserRepository userRepository;
 
@@ -41,13 +40,10 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-  // Generate JWT token
     public String generateToken(UserDetails userDetails) {
         log.debug("Generating JWT token for user: {}", userDetails.getUsername());
 
         Map<String, Object> claims = new HashMap<>();
-
-        // Add roles to JWT claims
         claims.put("roles", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -60,8 +56,6 @@ public class JwtUtil {
         return token;
     }
 
-
-        // Create token with claims
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
@@ -72,7 +66,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Extract username from JWT
+
     public String extractUsername(String token) {
         log.debug("Extracting username from JWT");
         String username = extractClaim(token, Claims::getSubject);
@@ -80,18 +74,18 @@ public class JwtUtil {
         return username;
     }
 
-    // Extract expiration date
+
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    // Extract claim using function
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    // Extract all claims
+
     private Claims extractAllClaims(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
@@ -112,7 +106,7 @@ public class JwtUtil {
         }
     }
 
-    // Check if token is expired
+
     private Boolean isTokenExpired(String token) {
         Date expiration = extractExpiration(token);
         boolean expired = expiration.before(new Date());
@@ -120,7 +114,7 @@ public class JwtUtil {
         return expired;
     }
 
-    // Validate JWT token
+
     public Boolean isTokenValid(String token, UserDetails userDetails) {
         try {
             final String username = extractUsername(token);

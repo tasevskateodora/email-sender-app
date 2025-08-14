@@ -24,7 +24,7 @@ public class EmailExecution extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "email_job_id", nullable = false)
-    //@JsonIgnore
+    @JsonIgnore
     private EmailJob emailJob;
 
     public EmailExecution() {

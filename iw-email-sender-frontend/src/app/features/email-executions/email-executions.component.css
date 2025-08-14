@@ -1,0 +1,13 @@
+.container {
+    padding: 16px;
+}
+
+.status-success {
+    color: green;
+    font-weight: bold;
+}
+
+.status-fail {
+    color: red;
+    font-weight: bold;
+}

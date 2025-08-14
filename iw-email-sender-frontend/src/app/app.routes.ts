@@ -33,14 +33,25 @@ export const routes: Routes = [
         canActivate: [AuthGuard]
       },
       {
+        path: 'email-executions',
+        loadComponent: () => import('./features/email-executions/email-executions.component').then(m => m.EmailExecutionsComponent),
+        canActivate: [AuthGuard]
+      },
+      {
         path: '',
         redirectTo: 'users',
         pathMatch: 'full'
       }
     ]
   },
+  {
+    path: 'email-executions',
+    loadComponent: () => import('./features/email-executions/email-executions.component').then(m => m.EmailExecutionsComponent),
+    canActivate: [AuthGuard]
+  },
 
   // Default redirects
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: '/dashboard' }
+  { path: '**', redirectTo: '/dashboard' },
+
 ];

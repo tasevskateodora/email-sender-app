@@ -1,11 +1,11 @@
 <mat-toolbar color="primary" class="app-header" *ngIf="isLoggedIn()">
-  <!-- Logo and Title -->
+
   <div class="header-brand" (click)="navigateTo('/dashboard')" style="cursor: pointer;">
     <mat-icon class="brand-icon">email</mat-icon>
     <span class="brand-title">IW Email Sender</span>
   </div>
 
-  <!-- Navigation Menu -->
+
   <nav class="header-nav">
     <button
       mat-button
@@ -34,7 +34,6 @@
       Templates
     </button>
 
-    <!-- Admin Menu -->
     <button
       mat-button
       [matMenuTriggerFor]="adminMenu"
@@ -42,7 +41,6 @@
       *ngIf="isAdmin()">
       <mat-icon>admin_panel_settings</mat-icon>
       Admin
-     <!-- <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>-->
     </button>
 
     <mat-menu #adminMenu="matMenu">
@@ -51,9 +49,20 @@
         <span>User Management</span>
       </button>
     </mat-menu>
+
+    <button
+      mat-button
+      class="nav-button"
+      routerLink="/admin/email-executions"
+      routerLinkActive="active">
+      <mat-icon></mat-icon>
+      Email Stats
+    </button>
+
+
   </nav>
 
-  <!-- Spacer -->
+
   <span class="header-spacer"></span>
 
 

@@ -60,19 +60,6 @@ public class EmailJobController {
         return job.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
-  /*  @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @PutMapping("/{id}/user/{userId}")
-    public ResponseEntity<EmailJobDto> updateEmailJob(
-            @PathVariable UUID id,
-            @PathVariable UUID userId,
-            @RequestBody EmailJobDto requestDto) {
-        Optional<EmailJobDto> updated = emailJobService.update(id, userId, requestDto);
-
-        return updated.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }*/
-
     @PutMapping("/{id}/user/{userId}")
     public ResponseEntity<EmailJobDto> updateEmailJob(
             @PathVariable UUID id,
@@ -121,12 +108,6 @@ public class EmailJobController {
     }
 
 
-   /* @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<EmailJobDto>> getEmailJobsByUser(@PathVariable UUID userId) {
-        List<EmailJobDto> jobs = emailJobService.findByUserId(userId);
-        return ResponseEntity.ok(jobs);
-    }*/
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/{id}/enable")

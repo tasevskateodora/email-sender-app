@@ -23,7 +23,6 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./email-job-list.css'],
   standalone: true,
   imports: [
-    // Импорти на Angular Material модули и други потребни модули
     MatIconModule,
     MatButtonModule,
     MatCardModule,
