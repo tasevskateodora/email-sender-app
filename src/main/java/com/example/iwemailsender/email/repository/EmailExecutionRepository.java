@@ -11,4 +11,5 @@ public interface EmailExecutionRepository extends JpaRepository<EmailExecution, 
 
     List<EmailExecution> findByEmailJobIdOrderByExecutedAtDesc(UUID emailJobId);
 
+
 }

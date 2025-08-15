@@ -1,10 +1,14 @@
 package com.example.iwemailsender.email.service.impl;
 
 import com.example.iwemailsender.config.EmailSchedulerConfig;
+import com.example.iwemailsender.email.domain.EmailJob;
 import com.example.iwemailsender.email.domain.EmailTemplate;
 import com.example.iwemailsender.email.dto.EmailDto;
+import com.example.iwemailsender.email.dto.EmailExecutionDto;
+import com.example.iwemailsender.email.dto.EmailJobDto;
 import com.example.iwemailsender.email.dto.LogExecutionDto;
 import com.example.iwemailsender.email.service.EmailExecutionService;
+import com.example.iwemailsender.email.service.EmailJobService;
 import com.example.iwemailsender.email.service.EmailSendingService;
 import com.example.iwemailsender.infrastructure.enums.EmailStatus;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -15,7 +19,6 @@ import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.boot.autoconfigure.orm.jpa.EntityManagerFactoryDependsOnPostProcessor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.retry.annotation.Backoff;
@@ -23,12 +26,10 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Service
@@ -36,14 +37,14 @@ public class EmailSendingServiceImpl implements EmailSendingService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailSendingServiceImpl.class);
 
-
-
     private final JavaMailSender mailSender;
     private final ObjectMapper objectMapper;
     private final EmailSchedulerConfig emailConfig;
     private final EmailExecutionService emailExecutionService;
-    public EmailSendingServiceImpl(JavaMailSender mailSender,EmailSchedulerConfig emailConfig, EmailExecutionService emailExecutionService) {
+    private final EmailJobService emailJobService;
+    public EmailSendingServiceImpl(JavaMailSender mailSender, EmailSchedulerConfig emailConfig, EmailExecutionService emailExecutionService, EmailJobService emailJobService) {
         this.mailSender = mailSender;
+        this.emailJobService = emailJobService;
         this.objectMapper = new ObjectMapper();
         this.emailConfig = emailConfig;
         this.emailExecutionService = emailExecutionService;
@@ -148,66 +149,71 @@ public class EmailSendingServiceImpl implements EmailSendingService {
         }
     }
 
-    public boolean testConnection() {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            logger.info("Email server connection test successful");
-            return true;
-        } catch (Exception e) {
-            logger.error("Email server connection test failed: {}", e.getMessage());
-            return false;
-        }
-    }
 
     @Retryable(
             value = {Exception.class},
             maxAttemptsExpression = "#{@emailSchedulerConfig.maxAttempts}",
             backoff = @Backoff(delayExpression = "#{@emailSchedulerConfig.delaySeconds}")
     )
-    public void sendEmailWithTemplate(UUID jobId, String from, String recipients, EmailTemplate template) throws Exception {
+    public void sendEmailWithTemplate(EmailJobDto job, String from, String recipients, EmailTemplate template) throws Exception {
 
-
-        logger.info("Validating email job {}", jobId);
+        logger.info("Validating email job {}", job);
 
         if (template == null) {
-            logger.error("EmailTemplate is null for job {}", jobId);
+            logger.error("EmailTemplate is null for job {}", job);
             throw new IllegalArgumentException("EmailTemplate cannot be null - job configuration error");
         }
 
         if (template.getSubject() == null || template.getBody() == null) {
             logger.error("EmailTemplate incomplete for job {}: subject={}, body={}",
-                    jobId, template.getSubject(), template.getBody());
+                    job, template.getSubject(), template.getBody());
             throw new IllegalArgumentException("EmailTemplate must have both subject and body");
         }
 
         if (recipients == null || recipients.trim().isEmpty()) {
-            logger.error("No recipients specified for job {}", jobId);
+            logger.error("No recipients specified for job {}", job);
             throw new IllegalArgumentException("Recipients cannot be empty");
         }
 
         if (from == null || from.trim().isEmpty()) {
-            logger.error("No sender email specified for job {}", jobId);
+            logger.error("No sender email specified for job {}", job);
             throw new IllegalArgumentException("Sender email cannot be empty");
         }
 
-        logger.info("Validation passed, sending email with template '{}' for job {}", template.getName(), jobId);
+        logger.info("Validation passed, sending email with template '{}' for job {}", template.getName(), job);
 
         try {
-            List<String> recipientList = parseRecipients(recipients);
-            EmailDto dto = new EmailDto(from, recipientList, template.getSubject(), template.getBody());
+
+            EmailDto dto = new EmailDto(from, parseRecipients(recipients), template.getSubject(), template.getBody());
             sendEmail(dto);
 
-            logger.info("Email sent successfully for job {}", jobId);
+            emailJobService.updateNextRunTime(job.getId(), emailJobService.calculateNextRunTime(job));
+            emailExecutionService.logExecution(createDto(job.getId(), 1, EmailStatus.SUCCESS,  null));
+
+            logger.info("Email sent successfully for job {}", job);
 
         } catch (Exception e) {
-            logger.warn("Email sending failed for job {} (attempt will retry): {}", jobId, e.getMessage());
+            logger.warn("Email sending failed for job {} (attempt will retry): {}", job, e.getMessage());
             throw e;
         }
     }
 
     @Recover
-    public void recoverSendEmailWithTemplate(Exception e, UUID jobId, String from, String recipients, EmailTemplate template) {
-        logger.error("All retry attempts failed for job {}: {}", jobId, e.getMessage());
+    public void recoverSendEmailWithTemplate(Exception e, EmailJobDto job, String from, String recipients, EmailTemplate template) {
+        logger.error("All retry attempts failed for job {}: {}", job.getId(), e.getMessage());
+
+        try {
+            emailExecutionService.logExecution(createDto(job.getId(), emailConfig.getMaxAttempts(), EmailStatus.FAIL, e.getMessage()));
+            logger.info("FAIL status logged to database for job {}", job.getId());
+        } catch (Exception dbEx) {
+            logger.error("CRITICAL: Failed to log FAIL status to database for job {}: {}", job.getId(), dbEx.getMessage());
+        }
+        try {
+            emailJobService.updateNextRunTime(job.getId(), emailJobService.calculateNextRunTime(job));
+            logger.info("Next run time updated for job {}", job.getId());
+        } catch (Exception updateEx) {
+            logger.error("Failed to update next run time for job {}: {}", job.getId(), updateEx.getMessage());
+        }
 
         String failureType;
         String actionRequired;
@@ -229,7 +235,7 @@ public class EmailSendingServiceImpl implements EmailSendingService {
 
         try {
             String subject = String.format("[%s] Email Job Failed After %d Attempts - ID: %s",
-                    failureType, emailConfig.getMaxAttempts(), jobId);
+                    failureType, emailConfig.getMaxAttempts(), job.getId());
 
             String templateInfo = template != null ?
                     String.format("%s (%s)", template.getName(), template.getSubject()) :
@@ -254,7 +260,7 @@ public class EmailSendingServiceImpl implements EmailSendingService {
                             "System: Email Scheduler\n" +
                             "Timestamp: %s\n",
                     failureType,
-                    jobId,
+                    job.getId(),
                     from,
                     recipients,
                     templateInfo,
@@ -273,18 +279,27 @@ public class EmailSendingServiceImpl implements EmailSendingService {
                 helper.setText(body, false);
             });
 
-            logger.info("Admin alert sent for failed job {}", jobId);
+            logger.info("Admin alert sent for failed job {}", job.getId());
 
         } catch (Exception ex) {
-            logger.error("CRITICAL: Failed to send admin notification for job {}: {}", jobId, ex.getMessage());
+            logger.error("CRITICAL: Failed to send admin notification for job {}: {}", job.getId(), ex.getMessage());
             System.err.println("CRITICAL: Admin alert failed!");
-            System.err.println("Job ID: " + jobId);
+            System.err.println("Job ID: " + job.getId());
             System.err.println("Failure: " + failureType + " - " + e.getMessage());
             System.err.println("Alert error: " + ex.getMessage());
         }
+
         throw new RuntimeException("Email job failed after " + emailConfig.getMaxAttempts() +
                 " retry attempts: " + e.getMessage(), e);
     }
 
+    LogExecutionDto createDto(UUID jobId, int retryAttempt, EmailStatus status, String errorMessage) {
+        LogExecutionDto dto = new LogExecutionDto();
+        dto.setJobId(jobId);
+        dto.setRetryAttempt(retryAttempt);
+        dto.setStatus(status);
+        dto.setErrorMessage(errorMessage);
+        return dto;
+    }
 
 }

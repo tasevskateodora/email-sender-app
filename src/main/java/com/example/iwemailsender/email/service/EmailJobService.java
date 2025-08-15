@@ -22,6 +22,7 @@ public interface EmailJobService {
     void updateNextRunTime(UUID jobId, LocalDateTime nextRunTime);
     List<EmailJobDto> findByUserId(UUID userId);
     void setJobStatus(UUID jobId, boolean enabled);
+    LocalDateTime calculateNextRunTime(EmailJobDto job);
 }
 
 

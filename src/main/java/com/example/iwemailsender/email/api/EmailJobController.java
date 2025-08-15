@@ -84,7 +84,6 @@ public class EmailJobController {
 
 
     @PreAuthorize("hasRole('ADMIN')")
-    //@PreAuthorize("hasAnyRole('ADMIN','USER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmailJob(@PathVariable UUID id) {
         emailJobService.deleteById(id);

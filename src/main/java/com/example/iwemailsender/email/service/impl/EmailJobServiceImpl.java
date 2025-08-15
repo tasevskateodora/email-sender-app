@@ -11,6 +11,8 @@ import com.example.iwemailsender.email.repository.UserRepository;
 import com.example.iwemailsender.email.service.EmailJobService;
 import com.example.iwemailsender.infrastructure.enums.RecurrencePattern;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class EmailJobServiceImpl implements EmailJobService {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmailSendingServiceImpl.class);
     private final EmailJobRepository emailJobRepository;
     private final UserRepository userRepository;
     private final EmailJobMapper emailJobMapper;
@@ -155,5 +158,48 @@ public class EmailJobServiceImpl implements EmailJobService {
         } else {
             throw new EntityNotFoundException("EmailJob not found with id: " + jobId);
         }
+    }
+
+    public LocalDateTime calculateNextRunTime(EmailJobDto job) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (job.isOneTime()) {
+            return null;
+        }
+
+        if (job.getEndDate() != null && now.isAfter(job.getEndDate())) {
+            return null;
+        }
+
+        LocalDateTime nextRun = now;
+        switch (job.getRecurrencePattern()) {
+            case DAILY:
+                nextRun = nextRun.plusDays(1);
+                break;
+            case WEEKLY:
+                nextRun = nextRun.plusWeeks(1);
+                break;
+            case MONTHLY:
+                nextRun = nextRun.plusMonths(1);
+                break;
+            case YEARLY:
+                nextRun = nextRun.plusYears(1);
+                break;
+            case ONE_TIME:
+
+                return null;
+            default:
+                logger.warn("Unknown recurrence pattern for job {}: {}", job.getId(), job.getRecurrencePattern());
+                return null;
+        }
+
+        if (job.getSendTime() != null) {
+            nextRun = nextRun.with(job.getSendTime());
+        }
+        if (job.getEndDate() != null && nextRun.isAfter(job.getEndDate())) {
+            return null;
+        }
+
+        return nextRun;
     }
 }
