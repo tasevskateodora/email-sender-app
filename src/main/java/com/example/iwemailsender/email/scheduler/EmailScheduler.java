@@ -84,40 +84,5 @@ public class EmailScheduler {
         }
     }
 
-    private boolean attemptEmailSending(EmailJobDto job) {
-        if (job.getEmailTemplate() == null) {
-            logger.error("Job {} has no associated EmailTemplate", job.getId());
-            LogExecutionDto dto = new LogExecutionDto();
-            dto.setJobId(job.getId());
-            dto.setStatus(EmailStatus.FAIL);
-            dto.setErrorMessage("No EmailTemplate associated");
-            dto.setRetryAttempt(1);
-
-            emailExecutionService.logExecution(dto);
-            return false;
-        }
-
-        try {
-            logger.info("Attempting to send email for job {}", job.getId());
-            emailSendingService.sendEmailWithTemplate(
-                    job,
-                    job.getSenderEmail(),
-                    job.getReceiverEmails(),
-                    job.getEmailTemplate()
-            );
-
-            LogExecutionDto dto = new LogExecutionDto();
-            dto.setJobId(job.getId());
-            dto.setStatus(EmailStatus.SUCCESS);
-            dto.setErrorMessage(null);
-            dto.setRetryAttempt(1);
-
-            emailExecutionService.logExecution(dto);
-            return true;
-        } catch (Exception e) {
-            logger.warn("Email sending failed for job {}: {}", job.getId(), e.getMessage());
-            return false;
-        }
-    }
 
 }

@@ -124,32 +124,6 @@ public class EmailSendingServiceImpl implements EmailSendingService {
         return Arrays.asList(recipients.split("[,;]"));
     }
 
-
-    public void sendEmailWithAttachment(String from, String to, String subject, String body,
-                                        String attachmentPath, String attachmentName) throws Exception
-    {
-        logger.info("Sending email with attachment from {} to {}", from, to);
-        try{
-            MimeMessage message=mailSender.createMimeMessage();
-            MimeMessageHelper helper=new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(from);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(body, true);
-
-            if(attachmentPath != null && !attachmentPath.trim().isEmpty())
-            {
-                helper.addAttachment(attachmentName, new java.io.File(attachmentPath));
-            }
-            mailSender.send(message);
-            logger.info("Email with attachment sent successfully from {} to {}", from, to);
-        } catch (MessagingException e) {
-            logger.error("Failed to send email with attachment from {} to {}: {}", from, to, e.getMessage());
-            throw new Exception("Failed to send email with attachment: " + e.getMessage(), e);
-        }
-    }
-
-
     @Retryable(
             value = {Exception.class},
             maxAttemptsExpression = "#{@emailSchedulerConfig.maxAttempts}",

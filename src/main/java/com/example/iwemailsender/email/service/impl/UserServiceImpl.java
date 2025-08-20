@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    @Override
+   @Override
     public Optional<UserDto> update(UUID id, UserDto userRequest) {
 
         if (!userRepository.existsById(id)) {
@@ -130,7 +130,6 @@ public class UserServiceImpl implements UserService {
         User updatedUser = userRepository.save(user);
         return Optional.of(userMapper.toDto(updatedUser));
     }
-
 
 
     @Override
