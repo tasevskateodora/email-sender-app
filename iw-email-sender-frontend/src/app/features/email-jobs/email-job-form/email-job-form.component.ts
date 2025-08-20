@@ -23,8 +23,6 @@ export class EmailJobFormComponent implements OnInit {
   errorMessage = '';
 
   @Input() jobId?: string;
-  // Optional input for current user ID (needed for save)
- // @Input() userId!: string;
 
   @Output() formSaved = new EventEmitter<EmailJob>();
 
@@ -43,12 +41,7 @@ export class EmailJobFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    //this.loadTemplates();
 
-  /*  if (this.jobId) {
-      this.loadJob(this.jobId);
-
-    }*/
 
     this.loadTemplates().then(() => {
       console.log("Form value after patch:", this.emailJobForm.value);
@@ -88,12 +81,6 @@ export class EmailJobFormComponent implements OnInit {
     });
   }
 
-  /*private loadTemplates(): void {
-    this.emailTemplateService.getAll().subscribe({
-      next: (templates) => this.templates = templates,
-      error: (err) => this.errorMessage = 'Failed to load templates'
-    });
-  }*/
 
   private loadJob(id: string): void {
     this.loading = true;

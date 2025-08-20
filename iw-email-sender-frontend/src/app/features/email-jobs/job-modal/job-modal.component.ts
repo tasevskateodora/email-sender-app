@@ -142,12 +142,6 @@ export class JobModalComponent implements OnInit {
 
     if (emailTemplateId) {
       const matchingTemplate = this.templates.find(t => String(t.id) === emailTemplateId);
-   /*   if (matchingTemplate) {
-        console.log("✅ Matching template found:", matchingTemplate);
-      } else {
-        console.log("❌ No matching template found!");
-        console.log("🔍 Available template IDs:", this.templates.map(t => String(t.id)));
-      }*/
     }
 
     const startDate = job.startDate ? new Date(job.startDate) : null;
@@ -160,7 +154,7 @@ export class JobModalComponent implements OnInit {
       endDate: endDate,
       sendTime: job.sendTime,
       recurrencePattern: job.recurrencePattern,
-      emailTemplateId: emailTemplateId,  // Use the processed template ID
+      emailTemplateId: emailTemplateId,
       oneTime: job.oneTime,
       enabled: job.enabled
     });
@@ -197,7 +191,7 @@ export class JobModalComponent implements OnInit {
       emailTemplateId: formValue.emailTemplateId
     };
 
-    // Add template ID if selected
+
     if (formValue.emailTemplateId) {
       const selectedTemplate = this.templates.find(t => String(t.id) === String(formValue.emailTemplateId));
       if (selectedTemplate) {
